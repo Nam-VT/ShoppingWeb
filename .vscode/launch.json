@@ -1,0 +1,14 @@
+{
+    "configurations": [
+        {
+            "type": "java",
+            "name": "Spring Boot-ShoppingWebApplication<ShoppingWeb>",
+            "request": "launch",
+            "cwd": "${workspaceFolder}",
+            "mainClass": "com.project2.ShoppingWeb.ShoppingWebApplication",
+            "projectName": "ShoppingWeb",
+            "args": "",
+            "envFile": "${workspaceFolder}/.env"
+        }
+    ]
+}
