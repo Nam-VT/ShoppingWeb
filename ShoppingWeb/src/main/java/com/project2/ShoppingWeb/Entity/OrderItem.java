@@ -43,6 +43,7 @@ public class OrderItem {
     private User user; // Người mua
 
     @Column(name = "created_at")
+    @Builder.Default
     private LocalDateTime createdAt = LocalDateTime.now();
 }
 
