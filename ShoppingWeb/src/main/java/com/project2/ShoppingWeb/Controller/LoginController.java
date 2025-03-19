@@ -11,7 +11,7 @@ import com.project2.ShoppingWeb.DTO.LoginRequest;
 import com.project2.ShoppingWeb.Entity.User;
 
 @RestController
-@RequestMapping("/login")
+@RequestMapping("/auth")
 @RequiredArgsConstructor
 public class LoginController {
 
