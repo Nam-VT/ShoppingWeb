@@ -13,7 +13,7 @@ import com.project2.ShoppingWeb.Entity.User;
 @RestController
 @RequestMapping("/auth")
 @RequiredArgsConstructor
-public class LoginController {
+public class AuthController {
 
     private final UserService userService;
 
