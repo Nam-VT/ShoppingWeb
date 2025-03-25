@@ -1,9 +1,7 @@
 package com.project2.ShoppingWeb.Service;
 
 import java.util.List;
-
 import com.project2.ShoppingWeb.DTO.LoginRequest;
-
 import com.project2.ShoppingWeb.Entity.User;
 
 public interface UserService {

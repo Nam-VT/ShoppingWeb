@@ -30,13 +30,12 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public User registerUser(User registrationRequest) {
-        // TODO Auto-generated method stub
         UserRole role = UserRole.USER;
 
         User user = User.builder()
                 .name(registrationRequest.getName())
                 .email(registrationRequest.getEmail())
-                .password(passwordEncoder.encode(registrationRequest.getPassword()) )
+                .password(passwordEncoder.encode(registrationRequest.getPassword()))
                 .phoneNumber(registrationRequest.getPhoneNumber())
                 .role(role)
                 .build();
@@ -48,9 +47,8 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public LoginRequest loginUser(LoginRequest loginRequest) {
-        // TODO Auto-generated method stub
-        User user = userRepo.findByName(loginRequest.getName())
-                .orElseThrow(() -> new RuntimeException("User not found"));
+        User user = userRepo.findByEmail(loginRequest.getEmail())
+                .orElseThrow(() -> new NotFoundException("User not found"));
         if(user == null) {
             throw new RuntimeException("User not found");
         };
@@ -64,28 +62,27 @@ public class UserServiceImpl implements UserService {
         }
 
         return LoginRequest.builder()
-                .name(user.getName())
+                .email(user.getEmail())
                 .token(token)
                 .build();
     }
 
     @Override
     public List<User> getAllUsers() {
-        // TODO Auto-generated method stub
         return userRepo.findAll();
     }
 
     @Override
     public User getLoginUser() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        String  name = authentication.getName();
+        String email = authentication.getName();
         if (authentication == null || !authentication.isAuthenticated()) {
             throw new UsernameNotFoundException("No authenticated user found");
         }
         else{
-            log.info("User name is: " + name);
+            log.info("User name is: " + email);
         }    
-        return userRepo.findByName(name)
+        return userRepo.findByEmail(email)
                 .orElseThrow(()-> new UsernameNotFoundException("User Not found"));
     }
 
@@ -106,7 +103,6 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public User getUserById(Integer id) {
-        // TODO Auto-generated method stub
         return userRepo.findById(id)
                 .orElseThrow(() -> new NotFoundException("User not found"));
     }
