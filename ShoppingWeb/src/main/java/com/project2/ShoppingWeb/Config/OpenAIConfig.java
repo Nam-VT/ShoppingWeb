@@ -1,4 +1,4 @@
-package com.project2.ShoppingWeb.Service;
+package com.project2.ShoppingWeb.Config;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
