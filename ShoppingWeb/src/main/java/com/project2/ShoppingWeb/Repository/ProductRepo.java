@@ -6,7 +6,7 @@ import com.project2.ShoppingWeb.Entity.Product;
 import com.project2.ShoppingWeb.Entity.Category;
 
 public interface ProductRepo extends JpaRepository<Product, Long> {
-    List<Product> findByCategory(Category category);
+    List<Product> findByCategoriesContaining(Category category);
     List<Product> findByNameContainingIgnoreCaseOrDescriptionContainingIgnoreCase(String nameKeyword, String descriptionKeyword);
-
+    List<Product> findByCategories(List<Category> categories);
 }

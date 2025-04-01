@@ -126,11 +126,13 @@ public class ProductServiceImpl implements ProductService {
     }
 
     @Override
-    public List<Product> getProductsByCategory(Long categoryId) {
-        Category category = categoryRepo.findById(categoryId)
-                .orElseThrow(() -> new NotFoundException("Category with ID " + categoryId + " not found"));
+    public List<Product> getProductsByCategories(List<Long> categoryIds) {
+        List<Category> categories = categoryRepo.findAllById(categoryIds);
+        if(categories.isEmpty()) {
+            throw new NotFoundException("Category not found");
+        }
 
-        return productRepo.findByCategory(category);
+        return productRepo.findByCategories(categories);
     }
 
     @Override

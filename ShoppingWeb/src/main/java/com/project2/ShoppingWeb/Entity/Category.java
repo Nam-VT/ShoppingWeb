@@ -24,7 +24,7 @@ public class Category {
     @Column(length = 255)
     private String description; 
 
-    @ManyToMany(mappedBy = "category", cascade = CascadeType.ALL)
+    @ManyToMany(mappedBy = "categories", cascade = CascadeType.ALL)
     private List<Product> products; 
 
     @Column(nullable = false, columnDefinition = "BOOLEAN DEFAULT true")
