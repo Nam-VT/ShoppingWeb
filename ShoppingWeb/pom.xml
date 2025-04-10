@@ -97,7 +97,7 @@
             <scope>compile</scope>
         </dependency>
 
-        <!-- VNPay dependencies -->
+       <!-- VNPay dependencies
         <dependency>
             <groupId>org.apache.commons</groupId>
             <artifactId>commons-lang3</artifactId>
@@ -107,7 +107,7 @@
             <groupId>commons-codec</groupId>
             <artifactId>commons-codec</artifactId>
             <version>1.15</version>
-        </dependency>
+        </dependency> -->
     </dependencies>
 
     <repositories>

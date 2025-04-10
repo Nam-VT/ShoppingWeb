@@ -4,80 +4,117 @@ import '../../style/addProduct.css'
 import ApiService from "../../service/ApiService";
 
 const AddProductPage = () => {
-
-    const [image, setImage] = useState(null);
+    const [formData, setFormData] = useState({
+        categoryId: '',
+        name: '',
+        description: '',
+        price: ''
+    });
     const [categories, setCategories] = useState([]);
-    const [categoryId, setCategoryId] = useState('');
-    const [name, setName] = useState('');
-    const [description, setDescription] = useState('');
     const [message, setMessage] = useState('');
-    const [price, setPrice] = useState('');
-
+    const [loading, setLoading] = useState(false);
     const navigate = useNavigate();
 
     useEffect(() => {
-        ApiService.getAllCategory().then((res) => setCategories(res.categoryList));
-    }, [])
+        fetchCategories();
+    }, []);
 
-    const handleImage = (e) => {
-        setImage(e.target.files[0])
-    }
+    const fetchCategories = async () => {
+        try {
+            const response = await ApiService.getAllCategory();
+            setCategories(response || []);
+        } catch (error) {
+            setMessage(error.message || 'Failed to load categories');
+        }
+    };
+
+    const handleChange = (e) => {
+        const { name, value } = e.target;
+        setFormData(prev => ({
+            ...prev,
+            [name]: value
+        }));
+    };
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-        try {
-            const formData = new FormData();
-            formData.append('image', image);
-            formData.append('categoryId', categoryId);
-            formData.append('name', name);
-            formData.append('description', description);
-            formData.append('price', price);
-
-            const response = await ApiService.addProduct(formData);
-            if (response.status === 200) {
-                setMessage(response.message)
-                setTimeout(() => {
-                    setMessage('')
-                    navigate('/admin/products')
-                }, 3000);
-            }
-
-        } catch (error) {
-            setMessage(error.response?.data?.message || error.message || 'unable to upload product')
+        
+        if (!formData.categoryId || !formData.name || !formData.description || !formData.price) {
+            setMessage('All fields are required');
+            return;
         }
-    }
 
-    return(
+        setLoading(true);
+        try {
+            const productData = {
+                categoryId: [parseInt(formData.categoryId)],
+                name: formData.name.trim(),
+                description: formData.description.trim(),
+                price: parseFloat(formData.price)
+            };
+
+            await ApiService.addProduct(productData);
+            setMessage('Product added successfully');
+            setTimeout(() => navigate('/admin/products'), 2000);
+        } catch (error) {
+            setMessage(error.message || 'Failed to add product');
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    return (
         <div>
             <form onSubmit={handleSubmit} className="product-form">
                 <h2>Add Product</h2>
                 {message && <div className="message">{message}</div>}
-                <input type="file" onChange={handleImage} />
-                <select value={categoryId} onChange={(e) => setCategoryId(e.target.value)} >
+                
+                <select 
+                    name="categoryId"
+                    value={formData.categoryId}
+                    onChange={handleChange}
+                    disabled={loading}
+                >
                     <option value="">Select Category</option>
-                    {categories.map((cat)=>(
+                    {categories.map((cat) => (
                         <option value={cat.id} key={cat.id}>{cat.name}</option>
                     ))}
                 </select>
-                <input type="text" 
-                placeholder="Product name"
-                value={name}
-                onChange={(e)=> setName(e.target.value)} />
+
+                <input 
+                    type="text"
+                    name="name"
+                    placeholder="Product name"
+                    value={formData.name}
+                    onChange={handleChange}
+                    disabled={loading}
+                />
 
                 <textarea 
-                placeholder="Description"
-                value={description}
-                onChange={(e)=> setDescription(e.target.value)}/>
+                    name="description"
+                    placeholder="Description"
+                    value={formData.description}
+                    onChange={handleChange}
+                    disabled={loading}
+                />
 
-                <input type="number" 
-                placeholder="price"
-                value={price}
-                onChange={(e)=> setPrice(e.target.value)} />
+                <input 
+                    type="number"
+                    name="price"
+                    placeholder="Price"
+                    value={formData.price}
+                    onChange={handleChange}
+                    step="0.01"
+                    min="0"
+                    disabled={loading}
+                />
 
-                <button type="submit">Add Product</button>
+                <button type="submit" disabled={loading}>
+                    {loading ? 'Adding...' : 'Add Product'}
+                </button>
             </form>
         </div>
-    )
+    );
+};
 
-}
 export default AddProductPage;

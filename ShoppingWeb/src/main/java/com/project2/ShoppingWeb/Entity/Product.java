@@ -2,6 +2,8 @@ package com.project2.ShoppingWeb.Entity;
 
 import jakarta.persistence.*;
 import lombok.*;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
+import com.fasterxml.jackson.annotation.JsonBackReference;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -36,6 +38,7 @@ public class Product {
     @Column(nullable = false)
     private int soldQuantity; // Số lượng đã bán
 
+    @JsonManagedReference
     @ManyToMany
     @JoinTable(
             name = "product_category",
@@ -79,4 +82,5 @@ public class Product {
         this.categories = categories;
     }
 }
+
 

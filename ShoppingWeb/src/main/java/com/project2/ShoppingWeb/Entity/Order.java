@@ -2,6 +2,7 @@ package com.project2.ShoppingWeb.Entity;
 
 import jakarta.persistence.*;
 import lombok.*;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -32,6 +33,7 @@ public class Order {
     @Column(nullable = false)
     private BigDecimal totalPrice; // Tổng tiền đơn hàng
 
+    @JsonManagedReference
     @OneToMany(mappedBy = "order", cascade = CascadeType.ALL)
     private List<OrderItem> orderItems; // Danh sách sản phẩm trong đơn hàng
 

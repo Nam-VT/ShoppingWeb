@@ -15,9 +15,6 @@ const Footer = () => {
                     <NavLink to={"/"}>FAQs</NavLink>
                 </ul>
             </div>
-            <div className="footer-info">
-                <p>&copy; 2024 Phegon Mart. All right reserved.</p>
-            </div>
         </footer>
     )
 }

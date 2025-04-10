@@ -54,9 +54,20 @@ public class JwtUtils {
         return claimsTFunction.apply(Jwts.parser().verifyWith(key).build().parseSignedClaims(token).getPayload());
     }
 
-    public boolean isTokenValid(String token, UserDetails userDetails){
-        final String username = getUsernameFromToken(token);
-        return (username.equals(userDetails.getUsername()) && !isTokenExpired(token));
+    public boolean isTokenValid(String token, UserDetails userDetails) {
+        try {
+            final String username = getUsernameFromToken(token);
+            log.info("Validating token for user: {}", username);
+            log.info("UserDetails username: {}", userDetails.getUsername());
+            
+            boolean isValid = (username.equals(userDetails.getUsername()) && !isTokenExpired(token));
+            log.info("Token valid: {}", isValid);
+            
+            return isValid;
+        } catch (Exception e) {
+            log.error("Error validating token: ", e);
+            return false;
+        }
     }
 
     private boolean isTokenExpired(String token){

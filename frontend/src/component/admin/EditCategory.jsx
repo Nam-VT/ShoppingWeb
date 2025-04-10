@@ -5,41 +5,42 @@ import '../../style/addCategory.css'
 
 const EditCategory = () => {
     const { categoryId } = useParams();
-    const [name, setName] = useState('')
+    const [name, setName] = useState('');
     const [message, setMessage] = useState('');
+    const [loading, setLoading] = useState(false);
     const navigate = useNavigate();
 
-
     useEffect(() => {
-        fetchCategory(categoryId);
-    }, [categoryId])
+        fetchCategory();
+    }, [categoryId]);
 
     const fetchCategory = async () => {
         try {
             const response = await ApiService.getCategoryById(categoryId);
-            setName(response.category.name);
-
+            setName(response.name); // Trực tiếp lấy name từ response
         } catch (error) {
-            setMessage(error.response?.data?.message || error.message || "Failed to get a category by id")
-            setTimeout(() => {
-                setMessage('');
-            }, 3000)
+            setMessage(error.message || "Failed to get category");
+            setTimeout(() => setMessage(''), 3000);
         }
     }
 
     const handleSubmit = async (e) => {
         e.preventDefault();
+        
+        if (!name.trim()) {
+            setMessage('Category name is required');
+            return;
+        }
+
+        setLoading(true);
         try {
-            const response = await ApiService.updateCategory(categoryId, { name });
-            if (response.status === 200) {
-                setMessage(response.message);
-                setTimeout(() => {
-                    setMessage('');
-                    navigate("/admin/categories")
-                }, 3000)
-            }
+            await ApiService.updateCategory(categoryId, name.trim());
+            setMessage('Category updated successfully');
+            setTimeout(() => navigate("/admin/categories"), 2000);
         } catch (error) {
-            setMessage(error.response?.data?.message || error.message || "Failed to save a category")
+            setMessage(error.message || "Failed to update category");
+        } finally {
+            setLoading(false);
         }
     }
 
@@ -48,16 +49,19 @@ const EditCategory = () => {
             {message && <p className="message">{message}</p>}
             <form onSubmit={handleSubmit} className="category-form">
                 <h2>Edit Category</h2>
-                <input type="text"
+                <input 
+                    type="text"
                     placeholder="Category Name"
                     value={name}
-                    onChange={(e) => setName(e.target.value)} />
-
-                <button type="submit">Update</button>
+                    onChange={(e) => setName(e.target.value)}
+                    disabled={loading}
+                />
+                <button type="submit" disabled={loading}>
+                    {loading ? 'Updating...' : 'Update'}
+                </button>
             </form>
         </div>
-    )
-
+    );
 }
 
 export default EditCategory;

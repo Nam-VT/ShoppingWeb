@@ -12,6 +12,8 @@ import lombok.Setter;
 import java.time.LocalDateTime;
 import java.util.List;
 
+import com.fasterxml.jackson.annotation.JsonManagedReference;
+
 import com.project2.ShoppingWeb.Enums.UserRole;
 
 @Data
@@ -40,14 +42,17 @@ public class User {
 
     private UserRole role;
 
+    @JsonManagedReference
     @OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL, mappedBy = "user")
     private Address address;
 
 
     private String phoneNumber;
 
+    @JsonManagedReference
     @OneToMany(mappedBy = "user", fetch = FetchType.LAZY, cascade = CascadeType.ALL)   
     private List<OrderItem> orderItemlist;
 
     private final LocalDateTime created_at = LocalDateTime.now();
+
 }

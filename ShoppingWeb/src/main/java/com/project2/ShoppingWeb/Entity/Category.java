@@ -2,7 +2,7 @@ package com.project2.ShoppingWeb.Entity;
 
 import jakarta.persistence.*;
 import lombok.*;
-
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import java.util.List;
 
 @Entity
@@ -24,6 +24,7 @@ public class Category {
     @Column(length = 255)
     private String description; 
 
+    @JsonBackReference 
     @ManyToMany(mappedBy = "categories", cascade = CascadeType.ALL)
     private List<Product> products; 
 

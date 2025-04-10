@@ -79,12 +79,14 @@ public class ProductController {
     }
 
     @GetMapping("/get-product-by-category")
-    public ResponseEntity<List<Product>> getProductByCategory(@RequestParam Long categoryId) {
-        return ResponseEntity.ok(productService.getProductsByCategory(categoryId));
+    public ResponseEntity<List<Product>> getProductByCategory(@RequestParam List<Long> categoryId) {
+        return ResponseEntity.ok(productService.getProductsByCategories(categoryId));
     }
 
     @GetMapping("/search")
     public ResponseEntity<List<Product>> searchProduct(@RequestParam String searchValue) {
         return ResponseEntity.ok(productService.searchProduct(searchValue));
     }
+
+    
 }

@@ -13,7 +13,7 @@ import java.util.List;
 @RequiredArgsConstructor
 public class CategoryServiceImpl implements CategoryService {
     
-    private CategoryRepo categoryRepo;
+    private final CategoryRepo categoryRepo;
 
     @Override
     public Category createCategory(Category category) {

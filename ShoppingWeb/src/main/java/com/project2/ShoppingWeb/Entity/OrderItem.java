@@ -2,6 +2,7 @@ package com.project2.ShoppingWeb.Entity;
 
 import jakarta.persistence.*;
 import lombok.*;
+import com.fasterxml.jackson.annotation.JsonBackReference;
 
 import java.math.BigDecimal;
 import com.project2.ShoppingWeb.Enums.OrderStatus;
@@ -24,11 +25,13 @@ public class OrderItem {
     @Builder.Default
     private OrderStatus status = OrderStatus.PENDING; // Trạng thái đơn hàng
 
+    @JsonBackReference
     @ManyToOne
     @JoinColumn(name = "order_id")
     private Order order; // Đơn hàng chứa sản phẩm
 
-    @ManyToOne
+    @JsonBackReference
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "product_id")
     private Product product; // Sản phẩm thuộc đơn hàng
 
@@ -38,6 +41,7 @@ public class OrderItem {
     @Column(nullable = false)
     private BigDecimal price; // Giá sản phẩm tại thời điểm mua
 
+    @JsonBackReference
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id")
     private User user; // Người mua

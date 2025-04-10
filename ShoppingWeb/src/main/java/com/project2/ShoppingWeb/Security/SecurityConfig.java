@@ -26,13 +26,21 @@ public class SecurityConfig {
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity httpSecurity) throws Exception{
-        httpSecurity.csrf(AbstractHttpConfigurer::disable)
-                .cors(Customizer.withDefaults())
-                .authorizeHttpRequests(request -> request
-                        .requestMatchers("/auth/**", "/category/**", "/product/**", "/order/**").permitAll()
-                        .anyRequest().authenticated())
-                .sessionManagement(manager-> manager.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-                .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
+        httpSecurity
+            .csrf(AbstractHttpConfigurer::disable)
+            .cors(Customizer.withDefaults())
+            .authorizeHttpRequests(request -> request
+                .requestMatchers("/auth/**").permitAll()
+                .requestMatchers("/category/get-all-category", "/category/get-category-by-id").permitAll()
+                .requestMatchers("/product/get-all-product", "/product/get-product-by-id", "/product/search").permitAll()
+                .requestMatchers("/user/info").authenticated()
+                .requestMatchers("/admin/**").hasRole("ADMIN")
+                .anyRequest().authenticated()
+            )
+            .sessionManagement(manager -> manager
+                .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
+            )
+            .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
         return httpSecurity.build();
     }
 

@@ -3,97 +3,135 @@ import { useNavigate, useParams } from "react-router-dom";
 import '../../style/addProduct.css'
 import ApiService from "../../service/ApiService";
 
-
 const EditProductPage = () => {
-    const {productId} = useParams();
-    const [image, setImage] = useState(null);
+    const { productId } = useParams();
+    const [formData, setFormData] = useState({
+        categoryId: '',
+        name: '',
+        description: '',
+        price: ''
+    });
     const [categories, setCategories] = useState([]);
-    const [categoryId, setCategoryId] = useState('');
-    const [name, setName] = useState('');
-    const [description, setDescription] = useState('');
     const [message, setMessage] = useState('');
-    const [price, setPrice] = useState('');
-    const [imageUrl, setImageUrl] = useState(null);
+    const [loading, setLoading] = useState(false);
     const navigate = useNavigate();
 
-    useEffect(()=>{
-        ApiService.getAllCategory().then((res) => setCategories(res.categoryList));
-
+    useEffect(() => {
+        fetchCategories();
         if (productId) {
-            ApiService.getProductById(productId).then((response)=>{
-                setName(response.product.name);
-                setDescription(response.product.description);
-                setPrice(response.product.price);
-                setCategoryId(response.product.categoryId);
-                setImageUrl(response.product.imageUrl);
-            })
+            fetchProduct();
         }
     }, [productId]);
 
-    const handleImageChange = (e) =>{
-        setImage(e.target.files[0]);
-        setImageUrl(URL.createObjectURL(e.target.files[0]));
+    const fetchCategories = async () => {
+        try {
+            const response = await ApiService.getAllCategory();
+            setCategories(response || []);
+        } catch (error) {
+            setMessage(error.message || 'Failed to load categories');
+        }
     };
 
-    
+    const fetchProduct = async () => {
+        try {
+            const response = await ApiService.getProductById(productId);
+            setFormData({
+                categoryId: response.categories[0]?.id || '',
+                name: response.name,
+                description: response.description,
+                price: response.price
+            });
+        } catch (error) {
+            setMessage(error.message || 'Failed to load product');
+        }
+    };
+
+    const handleChange = (e) => {
+        const { name, value } = e.target;
+        setFormData(prev => ({
+            ...prev,
+            [name]: value
+        }));
+    };
+
     const handleSubmit = async (e) => {
         e.preventDefault();
-        try {
-            const formData = new FormData();
-            if(image){
-                formData.append('image', image);
-            }
-            formData.append('productId', productId);
-            formData.append('categoryId', categoryId);
-            formData.append('name', name);
-            formData.append('description', description);
-            formData.append('price', price);
 
-            const response = await ApiService.updateProduct(formData);
-            if (response.status === 200) {
-                setMessage(response.message)
-                setTimeout(() => {
-                    setMessage('')
-                    navigate('/admin/products')
-                }, 3000);
-            }
-
-        } catch (error) {
-            setMessage(error.response?.data?.message || error.message || 'unable to update product')
+        if (!formData.categoryId || !formData.name || !formData.description || !formData.price) {
+            setMessage('All fields are required');
+            return;
         }
-    }
 
-    return(
+        setLoading(true);
+        try {
+            const productData = {
+                productId: parseInt(productId),
+                categoryId: [parseInt(formData.categoryId)],
+                name: formData.name.trim(),
+                description: formData.description.trim(),
+                price: parseFloat(formData.price)
+            };
+
+            await ApiService.updateProduct(productData);
+            setMessage('Product updated successfully');
+            setTimeout(() => navigate('/admin/products'), 2000);
+        } catch (error) {
+            setMessage(error.message || 'Failed to update product');
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    return (
         <form onSubmit={handleSubmit} className="product-form">
-            <h2>Edit Produc</h2>
+            <h2>Edit Product</h2>
             {message && <div className="message">{message}</div>}
-            <input type="file" onChange={handleImageChange}/>
-            {imageUrl && <img src={imageUrl} alt={name} />}
-            <select value={categoryId} onChange={(e)=> setCategoryId(e.target.value)}>
+
+            <select 
+                name="categoryId"
+                value={formData.categoryId}
+                onChange={handleChange}
+                disabled={loading}
+            >
                 <option value="">Select Category</option>
-                {categories.map((cat)=>(
+                {categories.map((cat) => (
                     <option value={cat.id} key={cat.id}>{cat.name}</option>
                 ))}
             </select>
 
-            <input type="text" 
+            <input 
+                type="text"
+                name="name"
                 placeholder="Product name"
-                value={name}
-                onChange={(e)=> setName(e.target.value)} />
+                value={formData.name}
+                onChange={handleChange}
+                disabled={loading}
+            />
 
-                <textarea 
+            <textarea 
+                name="description"
                 placeholder="Description"
-                value={description}
-                onChange={(e)=> setDescription(e.target.value)}/>
+                value={formData.description}
+                onChange={handleChange}
+                disabled={loading}
+            />
 
-                <input type="number" 
+            <input 
+                type="number"
+                name="price"
                 placeholder="Price"
-                value={price}
-                onChange={(e)=> setPrice(e.target.value)} />
+                value={formData.price}
+                onChange={handleChange}
+                step="0.01"
+                min="0"
+                disabled={loading}
+            />
 
-                <button type="submit">Update</button>
+            <button type="submit" disabled={loading}>
+                {loading ? 'Updating...' : 'Update Product'}
+            </button>
         </form>
     );
-}
+};
 
 export default EditProductPage;
