@@ -22,6 +22,7 @@ import AddProductPage from './component/admin/AddProductPage';
 import EditProductPage from './component/admin/EditProductPage';
 import AdminOrdersPage from './component/admin/AdminOrderPage';
 import AdminOrderDetailsPage from './component/admin/AdminOrderDetailsPage';
+import ChatBot from './component/common/ChatBot';
 
 function App() {
   return (
@@ -56,7 +57,8 @@ function App() {
 
           
         </Routes>
-      <Footer/>
+        <ChatBot />
+        <Footer/>
     </CartProvider>
     </BrowserRouter>
   );

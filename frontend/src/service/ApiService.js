@@ -161,10 +161,15 @@ export default class ApiService {
 
     /**CHAT BOT */
     static async chatWithBot(prompt) {
-        const response = await axios.get(`${this.BASE_URL}/bot/chat`, {
-            params: { prompt }
-        });
-        return response.data;
+        try {
+            const response = await axios.get(`${this.BASE_URL}/bot/chat`, {
+                params: { prompt }
+            });
+            return response.data;
+        } catch (error) {
+            console.error('Lỗi khi chat với bot:', error);
+            throw error;
+        }
     }
 
     /**AUTHENTICATION CHECKER */

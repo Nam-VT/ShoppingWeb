@@ -19,11 +19,11 @@ import java.util.Collections;
 public class AuthUser implements UserDetails {
     private User user;
 
-    @Override
-    public Collection<? extends GrantedAuthority> getAuthorities() {
-        return Optional.ofNullable(user)
-                .map(u -> List.of(new SimpleGrantedAuthority(u.getRole().name())))
-                .orElse(Collections.emptyList());
+        @Override
+        public Collection<? extends GrantedAuthority> getAuthorities() {
+            return Optional.ofNullable(user)
+                    .map(u -> List.of(new SimpleGrantedAuthority(u.getRole().name())))
+                    .orElse(Collections.emptyList());
         }
     
         @Override

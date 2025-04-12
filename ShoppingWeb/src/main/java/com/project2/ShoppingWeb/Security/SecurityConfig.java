@@ -32,9 +32,10 @@ public class SecurityConfig {
             .authorizeHttpRequests(request -> request
                 .requestMatchers("/auth/**").permitAll()
                 .requestMatchers("/category/get-all-category", "/category/get-category-by-id").permitAll()
-                .requestMatchers("/product/get-all-product", "/product/get-product-by-id", "/product/search").permitAll()
+                .requestMatchers("/product/get-all-product", "/product/get-product-by-id","/product/get-product-by-category", "/product/search").permitAll()
                 .requestMatchers("/user/info").authenticated()
                 .requestMatchers("/admin/**").hasRole("ADMIN")
+                .requestMatchers("/bot/chat").permitAll() 
                 .anyRequest().authenticated()
             )
             .sessionManagement(manager -> manager

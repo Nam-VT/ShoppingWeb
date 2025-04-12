@@ -45,7 +45,7 @@ const LoginPage = () => {
             setTimeout(() => {
                 if (response.role === 'ADMIN') {
                     console.log('Redirecting to admin dashboard...');
-                    navigate("/admin/dashboard");
+                    navigate("/admin");
                 } else {
                     console.log('Redirecting to profile...');
                     navigate("/profile");
