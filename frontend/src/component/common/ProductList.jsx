@@ -3,12 +3,20 @@ import { Link } from "react-router-dom";
 import { useCart } from "../context/CartContext";
 import '../../style/productList.css';
 
+// Thêm BASE_URL 
+const BASE_URL = 'http://localhost:8080';
 
 const ProductList = ({products}) => {
     const {cart, dispatch} = useCart();
 
+    console.log("Products in ProductList:", products);  // Thêm log để kiểm tra data
+
     const addToCart = (product) => {
-        dispatch({type: 'ADD_ITEM', payload: product});
+        if (product.stockQuantity > 0) {
+            dispatch({type: 'ADD_ITEM', payload: product});
+        } else {
+            alert('Sản phẩm đã hết hàng!');
+        }
     }
 
     const incrementItem = (product) => {
@@ -29,14 +37,23 @@ const ProductList = ({products}) => {
     return(
         <div className="product-list">
                 {products.map((product, index) => {
+                    console.log("Product image URL:", `${BASE_URL}${product.imageUrl}`);  // Log URL ảnh
                     const cartItem = cart.find(item => item.id === product.id);
                     return (
                         <div className="product-item" key={index}>
                             <Link to={`/product/${product.id}`}>
-                            <img src={product.imageUrl} alt={product.name} className="product-image" />
-                            <h3>{product.name}</h3>
-                            <p>{product.description}</p>
-                            <span>${product.price.toFixed(2)}</span>
+                                <img 
+                                    src={`${BASE_URL}${product.imageUrl}`}
+                                    alt={product.name} 
+                                    className="product-image"
+                                    onError={(e) => {
+                                        e.target.src = '/images/placeholder.png';
+                                    }}
+                                    loading="lazy"
+                                />
+                                <h3>{product.name}</h3>
+                                <p>{product.description}</p>
+                                <span>${product.price.toFixed(2)}</span>
                             </Link>
                             {cartItem ? (
                                 <div className="quantity-controls">

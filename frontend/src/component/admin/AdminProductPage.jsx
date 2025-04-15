@@ -1,8 +1,11 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import '../../style/adminProduct.css'
 import Pagination from "../common/Pagination";
 import ApiService from "../../service/ApiService";
+
+// Thêm BASE_URL trực tiếp 
+const BASE_URL = 'http://localhost:8080';
 
 const AdminProductPage = () => {
     const navigate = useNavigate();
@@ -13,11 +16,8 @@ const AdminProductPage = () => {
     const [loading, setLoading] = useState(false);
     const itemsPerPage = 10;
 
-    useEffect(() => {
-        fetchProducts();
-    }, [currentPage]);
-
-    const fetchProducts = async () => {
+    // Wrap fetchProducts trong useCallback
+    const fetchProducts = useCallback(async () => {
         setLoading(true);
         try {
             const response = await ApiService.getAllProducts();
@@ -29,7 +29,11 @@ const AdminProductPage = () => {
         } finally {
             setLoading(false);
         }
-    };
+    }, [currentPage, itemsPerPage]);
+
+    useEffect(() => {
+        fetchProducts();
+    }, [fetchProducts]);
 
     const handleEdit = (id) => {
         navigate(`/admin/edit-product/${id}`);
@@ -72,6 +76,15 @@ const AdminProductPage = () => {
                 <ul>
                     {products.map((product) => (
                         <li key={product.id}>
+                            <img 
+                                src={`${BASE_URL}${product.imageUrl}`}
+                                alt={product.name}
+                                style={{width: '50px', height: '50px', objectFit: 'cover'}}
+                                onError={(e) => {
+                                    console.log('Image URL:', `${BASE_URL}${product.imageUrl}`);
+                                    console.log('Load image error:', e);
+                                }}
+                            />
                             <span>{product.name}</span>
                             <button 
                                 className="product-btn" 

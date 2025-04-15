@@ -4,6 +4,9 @@ import ApiService from "../../service/ApiService";
 import { useCart } from "../context/CartContext";
 import '../../style/cart.css'
 
+// Thêm BASE_URL
+const BASE_URL = 'http://localhost:8080';
+
 const CartPage = () => {
     const { cart, dispatch } = useCart();
     const [message, setMessage] = useState(null);
@@ -83,7 +86,13 @@ const CartPage = () => {
                     <ul>
                         {cart.map(item => (
                             <li key={item.id}>
-                                <img src={item.imageUrl} alt={item.name} />
+                                <img 
+                                    src={`${BASE_URL}${item.imageUrl}`}
+                                    alt={item.name}
+                                    onError={(e) => {
+                                        e.target.src = '/images/placeholder.png';
+                                    }} 
+                                />
                                 <div>
                                     <h2>{item.name}</h2>
                                     <p>{item.description}</p>

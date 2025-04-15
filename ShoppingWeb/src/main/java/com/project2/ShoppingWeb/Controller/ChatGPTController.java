@@ -2,6 +2,8 @@ package com.project2.ShoppingWeb.Controller;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -25,12 +27,19 @@ public class ChatGPTController {
     private RestTemplate template;
 
     @GetMapping("/chat")
-    public String chat(@RequestParam("prompt") String prompt){
-        ChatGPTRequest request=new ChatGPTRequest(model, prompt);
-        ChatGPTResponse chatGptResponse = template.postForObject(apiURL, request, ChatGPTResponse.class);
-		if (chatGptResponse == null || chatGptResponse.getChoices() == null || chatGptResponse.getChoices().isEmpty()) {
-			return "No response from ChatGPT";
-		}
-        return chatGptResponse.getChoices().get(0).getMessage().getContent();
+    public ResponseEntity<?> chat(@RequestParam("prompt") String prompt) {
+        try {
+            ChatGPTRequest request = new ChatGPTRequest(model, prompt);
+            ChatGPTResponse chatGptResponse = template.postForObject(apiURL, request, ChatGPTResponse.class);
+            
+            if (chatGptResponse == null || chatGptResponse.getChoices() == null || chatGptResponse.getChoices().isEmpty()) {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("No response from ChatGPT");
+            }
+            
+            return ResponseEntity.ok(chatGptResponse.getChoices().get(0).getMessage().getContent());
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                               .body("Error: " + e.getMessage());
+        }
     }
 }

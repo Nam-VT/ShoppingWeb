@@ -1,25 +1,25 @@
 package com.project2.ShoppingWeb.Controller;
 
-import org.springframework.web.bind.annotation.RequestMapping;
-import lombok.RequiredArgsConstructor;
-
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
-
-import com.project2.ShoppingWeb.Service.ProductService;
-import com.project2.ShoppingWeb.Entity.Product;
-
 import java.math.BigDecimal;
 import java.util.List;
+
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
 
+import com.project2.ShoppingWeb.Entity.Product;
 import com.project2.ShoppingWeb.Exception.InvalidCredentialsException;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.PathVariable;
+import com.project2.ShoppingWeb.Service.ProductService;
+
+import lombok.RequiredArgsConstructor;
 
 
 
@@ -39,16 +39,16 @@ public class ProductController {
     @PostMapping("/create")
     @PreAuthorize("hasAuthority('ADMIN')")
     public ResponseEntity<Product> createProduct(
-        @RequestParam List<Long> categoryId,
-//        @RequestParam MultipartFile image,
+        @RequestParam List<Long> categoryIds,
+        @RequestParam MultipartFile image,
         @RequestParam String name,
         @RequestParam String description,
         @RequestParam BigDecimal price
     ) {
-        if (categoryId == null || name.isEmpty() || description.isEmpty() || price == null){
+        if (categoryIds == null || name.isEmpty() || description.isEmpty() || price == null){
             throw new InvalidCredentialsException("All Fields are Required");
         }
-        return ResponseEntity.ok(productService.createProduct(categoryId, name, description, price));
+        return ResponseEntity.ok(productService.createProduct(categoryIds, image, name, description, price));
     }
     
     @PutMapping("/update")

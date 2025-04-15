@@ -17,7 +17,6 @@ public class CategoryServiceImpl implements CategoryService {
 
     @Override
     public Category createCategory(Category category) {
-        // TODO Auto-generated method stub
         return categoryRepo.save(category);
     }
 

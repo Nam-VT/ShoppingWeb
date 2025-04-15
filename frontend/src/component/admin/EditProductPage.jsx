@@ -1,7 +1,10 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import '../../style/addProduct.css'
 import ApiService from "../../service/ApiService";
+
+// Thêm BASE_URL trực tiếp trong component
+const BASE_URL = 'http://localhost:8080';
 
 const EditProductPage = () => {
     const { productId } = useParams();
@@ -9,19 +12,14 @@ const EditProductPage = () => {
         categoryId: '',
         name: '',
         description: '',
-        price: ''
+        price: '',
+        image: null,
+        currentImageUrl: ''
     });
     const [categories, setCategories] = useState([]);
     const [message, setMessage] = useState('');
     const [loading, setLoading] = useState(false);
     const navigate = useNavigate();
-
-    useEffect(() => {
-        fetchCategories();
-        if (productId) {
-            fetchProduct();
-        }
-    }, [productId]);
 
     const fetchCategories = async () => {
         try {
@@ -32,25 +30,40 @@ const EditProductPage = () => {
         }
     };
 
-    const fetchProduct = async () => {
+    const fetchProduct = useCallback(async () => {
         try {
             const response = await ApiService.getProductById(productId);
             setFormData({
                 categoryId: response.categories[0]?.id || '',
                 name: response.name,
                 description: response.description,
-                price: response.price
+                price: response.price,
+                currentImageUrl: response.imageUrl
             });
         } catch (error) {
             setMessage(error.message || 'Failed to load product');
         }
-    };
+    }, [productId]);
+
+    useEffect(() => {
+        fetchCategories();
+        if (productId) {
+            fetchProduct();
+        }
+    }, [fetchProduct, productId]);
 
     const handleChange = (e) => {
         const { name, value } = e.target;
         setFormData(prev => ({
             ...prev,
             [name]: value
+        }));
+    };
+
+    const handleFileChange = (e) => {
+        setFormData(prev => ({
+            ...prev,
+            image: e.target.files[0]
         }));
     };
 
@@ -83,7 +96,25 @@ const EditProductPage = () => {
     };
 
     return (
-        <form onSubmit={handleSubmit} className="product-form">
+        <form onSubmit={handleSubmit} className="product-form" encType="multipart/form-data">
+            {formData.currentImageUrl && (
+                <div className="current-image">
+                    <img 
+                        src={`${BASE_URL}${formData.currentImageUrl}`} 
+                        alt="Current product" 
+                        style={{maxWidth: '200px'}}
+                    />
+                </div>
+            )}
+            
+            <input 
+                type="file"
+                name="image"
+                accept="image/*"
+                onChange={handleFileChange}
+                disabled={loading}
+            />
+
             <h2>Edit Product</h2>
             {message && <div className="message">{message}</div>}
 

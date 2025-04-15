@@ -4,6 +4,7 @@ import { useCart } from "../context/CartContext";
 import ApiService from "../../service/ApiService";
 import '../../style/productDetailsPage.css';
 
+const BASE_URL = 'http://localhost:8080';
 
 const ProductDetailsPage = () => {
 
@@ -59,7 +60,7 @@ const ProductDetailsPage = () => {
 
     return(
         <div className="product-detail">
-            <img src={product?.imageUrl} alt={product?.name} />
+            <img src={`${BASE_URL}${product?.imageUrl}`} alt={product?.name} />
             <h1>{product?.name}</h1>
             <p>{product?.description}</p>
             <span>${product.price.toFixed(2)}</span>

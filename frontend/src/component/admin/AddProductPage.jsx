@@ -8,7 +8,8 @@ const AddProductPage = () => {
         categoryId: '',
         name: '',
         description: '',
-        price: ''
+        price: '',
+        image: null
     });
     const [categories, setCategories] = useState([]);
     const [message, setMessage] = useState('');
@@ -36,24 +37,31 @@ const AddProductPage = () => {
         }));
     };
 
+    const handleFileChange = (e) => {
+        setFormData(prev => ({
+            ...prev,
+            image: e.target.files[0]
+        }));
+    };
+
     const handleSubmit = async (e) => {
         e.preventDefault();
         
-        if (!formData.categoryId || !formData.name || !formData.description || !formData.price) {
+        if (!formData.categoryId || !formData.name || !formData.description || !formData.price || !formData.image) {
             setMessage('All fields are required');
             return;
         }
 
         setLoading(true);
         try {
-            const productData = {
-                categoryId: [parseInt(formData.categoryId)],
-                name: formData.name.trim(),
-                description: formData.description.trim(),
-                price: parseFloat(formData.price)
-            };
+            const formDataToSend = new FormData();
+            formDataToSend.append('categoryIds', formData.categoryId);
+            formDataToSend.append('name', formData.name.trim());
+            formDataToSend.append('description', formData.description.trim());
+            formDataToSend.append('price', formData.price);
+            formDataToSend.append('image', formData.image);
 
-            await ApiService.addProduct(productData);
+            await ApiService.addProduct(formDataToSend);
             setMessage('Product added successfully');
             setTimeout(() => navigate('/admin/products'), 2000);
         } catch (error) {
@@ -65,7 +73,7 @@ const AddProductPage = () => {
 
     return (
         <div>
-            <form onSubmit={handleSubmit} className="product-form">
+            <form onSubmit={handleSubmit} className="product-form" encType="multipart/form-data">
                 <h2>Add Product</h2>
                 {message && <div className="message">{message}</div>}
                 
@@ -106,6 +114,14 @@ const AddProductPage = () => {
                     onChange={handleChange}
                     step="0.01"
                     min="0"
+                    disabled={loading}
+                />
+
+                <input 
+                    type="file"
+                    name="image"
+                    accept="image/*"
+                    onChange={handleFileChange}
                     disabled={loading}
                 />
 

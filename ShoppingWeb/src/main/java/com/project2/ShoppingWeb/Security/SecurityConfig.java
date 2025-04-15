@@ -1,6 +1,5 @@
 package com.project2.ShoppingWeb.Security;
 
-import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -15,6 +14,8 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+
+import lombok.RequiredArgsConstructor;
 
 @Configuration
 @EnableWebSecurity
@@ -31,8 +32,9 @@ public class SecurityConfig {
             .cors(Customizer.withDefaults())
             .authorizeHttpRequests(request -> request
                 .requestMatchers("/auth/**").permitAll()
+                .requestMatchers("/uploads/**").permitAll()  // Thêm dòng này
                 .requestMatchers("/category/get-all-category", "/category/get-category-by-id").permitAll()
-                .requestMatchers("/product/get-all-product", "/product/get-product-by-id","/product/get-product-by-category", "/product/search").permitAll()
+                .requestMatchers("/product/get-all-product", "/product/get-product-by-id","/product/get-product-by-category", "/product/search", "/product/create").permitAll()
                 .requestMatchers("/user/info").authenticated()
                 .requestMatchers("/admin/**").hasRole("ADMIN")
                 .requestMatchers("/bot/chat").permitAll() 

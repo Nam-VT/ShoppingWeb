@@ -1,20 +1,27 @@
 package com.project2.ShoppingWeb.Service.ServiceImpl;
 
-import com.project2.ShoppingWeb.Service.ProductService;
-import com.project2.ShoppingWeb.Exception.NotFoundException;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
-
+import java.io.IOException;
 import java.math.BigDecimal;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
+import java.util.List;
+import java.util.UUID;
 
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
-import com.project2.ShoppingWeb.Repository.CategoryRepo;
-import com.project2.ShoppingWeb.Repository.ProductRepo;
 
 import com.project2.ShoppingWeb.Entity.Category;
 import com.project2.ShoppingWeb.Entity.Product;
-import java.util.List;
+import com.project2.ShoppingWeb.Exception.NotFoundException;
+import com.project2.ShoppingWeb.Repository.CategoryRepo;
+import com.project2.ShoppingWeb.Repository.ProductRepo;
+import com.project2.ShoppingWeb.Service.FileStorageService;
+import com.project2.ShoppingWeb.Service.ProductService;
+
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 
 @Service
@@ -24,7 +31,8 @@ public class ProductServiceImpl implements ProductService {
 
     private final ProductRepo productRepo;
     private final CategoryRepo categoryRepo;
-
+    private final FileStorageService fileStorageService;
+    
     // private LocalImageService localImageService;
 
     // @Override
@@ -67,21 +75,22 @@ public class ProductServiceImpl implements ProductService {
     // }
 
     @Override
-    public Product createProduct(List<Long> categoryIds, String name, String description, BigDecimal price) {
-        // TODO Auto-generated method stub
+    public Product createProduct(List<Long> categoryIds,  MultipartFile image, String name, String description, BigDecimal price) {
+        String imageUrl = fileStorageService.storeProductImage(image);
+        
         List<Category> categories = categoryRepo.findAllById(categoryIds);
         if(categories.isEmpty()) {
             throw new NotFoundException("Category not found");
         }
-        Product product = new Product();
-        product.setCategories(categories);
-        product.setName(name);
-        product.setDescription(description);
-        product.setPrice(price);
 
-        productRepo.save(product);
-        return product;  
-        
+        Product product = Product.builder()
+                .name(name)
+                .description(description)
+                .price(price)
+                .imageUrl(imageUrl)
+                .build();
+
+        return productRepo.save(product);    
     }
 
     @Override   
@@ -108,10 +117,15 @@ public class ProductServiceImpl implements ProductService {
     @Override
     public void deleteProduct(Long id) {
         Product product = productRepo.findById(id)
-                .orElseThrow(() -> new NotFoundException("Product with ID " + id + " not found"));
+            .orElseThrow(() -> new RuntimeException("Product not found"));
+        
+        // Xóa ảnh trước
+        if (product.getImageUrl() != null) {
+            fileStorageService.deleteProductImage(product.getImageUrl());
+        }
 
+        // Xóa product
         productRepo.delete(product);
-        log.info("Product with ID {} has been deleted successfully.", id);
     }
 
     @Override

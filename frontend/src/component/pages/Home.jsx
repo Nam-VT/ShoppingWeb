@@ -15,7 +15,6 @@ const Home = () => {
     const itemsPerPage = 10;
 
     useEffect(()=> {
-
         const fetchProducts = async () => {
             try{
                 let allProducts = [];
@@ -25,23 +24,23 @@ const Home = () => {
                 if (searchItem) {
                     const response = await ApiService.searchProducts(searchItem);
                     allProducts = response.productList || [];
-                }else{
+                } else {
                     const response = await ApiService.getAllProducts();
-                    allProducts = response.productList || [];
-
+                    allProducts = response || [];
                 }
 
+                console.log("All Products:", allProducts);
+                
                 setTotalPages(Math.ceil(allProducts.length/itemsPerPage));
                 setProducts(allProducts.slice((currentPage -1) * itemsPerPage, currentPage * itemsPerPage));
                
-            }catch(error){
+            } catch(error){
                 setError(error.response?.data?.message || error.message || 'unable to fetch products')
             }
         }
 
         fetchProducts();
-
-    },[location.search, currentPage])
+    }, [location.search, currentPage])
 
 
     return(
