@@ -70,26 +70,69 @@ const EditProductPage = () => {
     const handleSubmit = async (e) => {
         e.preventDefault();
 
+        // Validate
         if (!formData.categoryId || !formData.name || !formData.description || !formData.price) {
             setMessage('All fields are required');
             return;
         }
 
+        // Validate price
+        if (Number(formData.price) <= 0) {
+            setMessage('Price must be greater than 0');
+            return;
+        }
+
         setLoading(true);
         try {
+            // Tạo object với kiểu dữ liệu đã convert
             const productData = {
-                productId: parseInt(productId),
-                categoryId: [parseInt(formData.categoryId)],
+                productId: Number(productId),
+                categoryId: Number(formData.categoryId),
                 name: formData.name.trim(),
                 description: formData.description.trim(),
-                price: parseFloat(formData.price)
+                price: Number(formData.price)
             };
 
-            await ApiService.updateProduct(productData);
+            // Log data đã convert
+            console.log('=== DEBUG: Data After Convert ===');
+            console.log('Product Data:', productData);
+
+            const formDataToSend = new FormData();
+            // Append data đã convert - ensure values are strings for FormData
+            Object.entries(productData).forEach(([key, value]) => {
+                formDataToSend.append(key, String(value));
+            });
+            
+            // Append image nếu có
+            if (formData.image) {
+                formDataToSend.append('image', formData.image);
+            }
+
+            // Log FormData
+            console.log('=== DEBUG: FormData Content ===');
+            for (let [key, value] of formDataToSend.entries()) {
+                console.log(`${key}:`, value, `(type: ${typeof value === 'object' ? 'File' : typeof value})`);
+            }
+
+            const response = await ApiService.updateProduct(formDataToSend);
+            console.log('=== DEBUG: Update Success ===');
+            console.log('Response:', response);
+            
             setMessage('Product updated successfully');
             setTimeout(() => navigate('/admin/products'), 2000);
         } catch (error) {
-            setMessage(error.message || 'Failed to update product');
+            console.error('=== DEBUG: Submit Error ===');
+            console.error('Error Status:', error.response?.status);
+            console.error('Error Message:', error.response?.data?.message || error.response?.data);
+            console.error('Error Details:', error.response?.data);
+            
+            // Set more informative error message
+            if (error.response?.data) {
+                setMessage(typeof error.response.data === 'string' ? error.response.data : 
+                           error.response.data.message || 'Failed to update product');
+            } else {
+                setMessage('Network error or server is unreachable');
+            }
         } finally {
             setLoading(false);
         }

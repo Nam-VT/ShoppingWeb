@@ -3,6 +3,7 @@ package com.project2.ShoppingWeb.Service;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.util.StringUtils;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -12,6 +13,7 @@ import java.nio.file.StandardCopyOption;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.UUID;
+import java.time.LocalDate;
 
 @Service
 public class FileStorageService {
@@ -39,43 +41,87 @@ public class FileStorageService {
         }
     }
 
-    public String storeProductImage(MultipartFile file) {
+    public String storeProductImage(MultipartFile file, String oldImagePath) {
         try {
-            if (file.isEmpty()) {
-                throw new RuntimeException("Failed to store empty file");
+            // Case 1: Không có file mới
+            if (file == null || file.isEmpty()) {
+                if (oldImagePath == null || oldImagePath.isEmpty()) {
+                    return ""; // Trả về chuỗi rỗng thay vì null
+                }
+                return oldImagePath;  // Giữ nguyên ảnh cũ nếu là update
             }
 
-            // Tạo tên file unique với timestamp
-            String timestamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
-            String originalFilename = file.getOriginalFilename();
-            if(originalFilename == null){
-                throw new RuntimeException("Failed to store empty file");
+            // Validate file type
+            String contentType = file.getContentType();
+            if (contentType == null || !contentType.startsWith("image/")) {
+                throw new RuntimeException("Only image files are allowed");
             }
-            String extension = originalFilename.substring(originalFilename.lastIndexOf("."));
-            String filename = timestamp + "_" + UUID.randomUUID().toString() + extension;
 
-            // Tạo thư mục theo ngày
-            String dateFolder = new SimpleDateFormat("yyyy-MM-dd").format(new Date());
-            Path datePath = productLocation.resolve(dateFolder);
-            Files.createDirectories(datePath);
+            // Validate file size (ví dụ: giới hạn 5MB)
+            if (file.getSize() > 5 * 1024 * 1024) {
+                throw new RuntimeException("File size exceeds the limit (5MB)");
+            }
 
-            // Lưu file
-            Path destinationFile = datePath.resolve(filename);
-            Files.copy(file.getInputStream(), destinationFile, StandardCopyOption.REPLACE_EXISTING);
+            // Generate unique filename
+            String fileName = StringUtils.cleanPath(file.getOriginalFilename());
+            String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
+            String uniqueFileName = timeStamp + "_" + UUID.randomUUID().toString() + "_" + fileName;
+            
+            // Use configured path
+            LocalDate today = LocalDate.now();
+            Path dailyDir = productLocation.resolve(today.toString());
+            
+            // Create directory if not exists
+            if (!Files.exists(dailyDir)) {
+                Files.createDirectories(dailyDir);
+            }
 
-            // Trả về đường dẫn relative để lưu vào database
-            return String.format("/uploads/products/%s/%s", dateFolder, filename);
+            // Delete old image if exists
+            if (oldImagePath != null && !oldImagePath.isEmpty()) {
+                try {
+                    deleteProductImage(oldImagePath);
+                } catch (Exception ex) {
+                    // Log error but continue with saving new file
+                    System.err.println("Warning: Failed to delete old image: " + ex.getMessage());
+                }
+            }
+
+            // Save new file
+            Path filePath = dailyDir.resolve(uniqueFileName);
+            Files.copy(file.getInputStream(), filePath, StandardCopyOption.REPLACE_EXISTING);
+
+            // Return relative path for database storage
+            String relativePath = "/uploads/products/" + today + "/" + uniqueFileName;
+            return relativePath;
         } catch (IOException e) {
-            throw new RuntimeException("Failed to store file", e);
+            throw new RuntimeException("Could not store the file. IO Error: " + e.getMessage(), e);
+        } catch (RuntimeException e) {
+            throw e; // Rethrow runtime exceptions
+        } catch (Exception e) {
+            throw new RuntimeException("Unexpected error storing file: " + e.getMessage(), e);
         }
     }
 
     public void deleteProductImage(String imagePath) {
+        // Skip if image path is null or empty
+        if (imagePath == null || imagePath.isEmpty()) {
+            return;
+        }
+        
         try {
-            Path file = rootLocation.resolve(imagePath.substring(1)); // Bỏ dấu / ở đầu
-            Files.deleteIfExists(file);
+            // Ensure path starts with / and remove it
+            String normalizedPath = imagePath.startsWith("/") ? imagePath.substring(1) : imagePath;
+            Path file = rootLocation.resolve(normalizedPath);
+            
+            if (Files.exists(file)) {
+                Files.delete(file);
+                System.out.println("Successfully deleted file: " + imagePath);
+            } else {
+                System.out.println("File not found for deletion: " + imagePath);
+            }
         } catch (IOException e) {
-            throw new RuntimeException("Failed to delete file", e);
+            System.err.println("Failed to delete file: " + imagePath + ", error: " + e.getMessage());
+            // Don't throw exception to prevent disrupting the update process
         }
     }
 }

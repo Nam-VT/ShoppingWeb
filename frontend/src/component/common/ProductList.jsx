@@ -1,5 +1,5 @@
 import React from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { useCart } from "../context/CartContext";
 import '../../style/productList.css';
 
@@ -8,8 +8,9 @@ const BASE_URL = 'http://localhost:8080';
 
 const ProductList = ({products}) => {
     const {cart, dispatch} = useCart();
+    const navigate = useNavigate();
 
-    console.log("Products in ProductList:", products);  // Thêm log để kiểm tra data
+    console.log("Products in ProductList:", products);
 
     const addToCart = (product) => {
         if (product.stockQuantity > 0) {
@@ -19,54 +20,57 @@ const ProductList = ({products}) => {
         }
     }
 
-    const incrementItem = (product) => {
-        dispatch({type: 'INCREMENT_ITEM', payload: product});
+    const goToProductDetail = (productId) => {
+        navigate(`/product/${productId}`);
     }
-
-    const decrementItem = (product) => {
-
-        const cartItem = cart.find(item => item.id === product.id);
-        if (cartItem && cartItem.quantity > 1) {
-            dispatch({type: 'DECREMENT_ITEM', payload: product}); 
-        }else{
-            dispatch({type: 'REMOVE_ITEM', payload: product}); 
-        }
-    }
-
 
     return(
         <div className="product-list">
-                {products.map((product, index) => {
-                    console.log("Product image URL:", `${BASE_URL}${product.imageUrl}`);  // Log URL ảnh
-                    const cartItem = cart.find(item => item.id === product.id);
-                    return (
-                        <div className="product-item" key={index}>
-                            <Link to={`/product/${product.id}`}>
-                                <img 
-                                    src={`${BASE_URL}${product.imageUrl}`}
-                                    alt={product.name} 
-                                    className="product-image"
-                                    onError={(e) => {
-                                        e.target.src = '/images/placeholder.png';
-                                    }}
-                                    loading="lazy"
-                                />
-                                <h3>{product.name}</h3>
-                                <p>{product.description}</p>
-                                <span>${product.price.toFixed(2)}</span>
-                            </Link>
-                            {cartItem ? (
-                                <div className="quantity-controls">
-                                    <button onClick={()=> decrementItem(product)}> - </button>
-                                    <span>{cartItem.quantity}</span>
-                                    <button onClick={()=> incrementItem(product)}> + </button>
-                                </div>
-                            ):(
-                                <button onClick={()=> addToCart(product)}>Add To Cart</button>
-                            )}
+            {products.map((product, index) => {
+                console.log("Product image URL:", `${BASE_URL}${product.imageUrl}`);
+                const isInCart = cart.some(item => item.id === product.id);
+                
+                return (
+                    <div className="product-item" key={index}>
+                        <div className="product-image-container">
+                            <img 
+                                src={`${BASE_URL}${product.imageUrl}`}
+                                alt={product.name} 
+                                className="product-image"
+                                onError={(e) => {
+                                    e.target.src = '/images/placeholder.png';
+                                }}
+                                loading="lazy"
+                            />
                         </div>
-                    )
-                })}
+                        
+                        <div className="product-info">
+                            <h3>{product.name}</h3>
+                            <p className="product-description">{product.description.length > 50 
+                                ? `${product.description.substring(0, 50)}...` 
+                                : product.description}</p>
+                            <span className="product-price">${product.price.toFixed(2)}</span>
+                        </div>
+                        
+                        <div className="product-actions">
+                            <button 
+                                className={`add-to-cart-btn ${isInCart ? 'added' : ''}`}
+                                onClick={() => addToCart(product)}
+                                disabled={isInCart}
+                            >
+                                {isInCart ? 'Added to Cart' : 'Add to Cart'}
+                            </button>
+                            
+                            <button 
+                                className="more-info-btn"
+                                onClick={() => goToProductDetail(product.id)}
+                            >
+                                More Info
+                            </button>
+                        </div>
+                    </div>
+                )
+            })}
         </div>
     )
 };

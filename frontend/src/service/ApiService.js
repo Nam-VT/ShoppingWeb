@@ -56,30 +56,66 @@ export default class ApiService {
 
     /**PRODUCT ENDPOINT */
     static async addProduct(formData) {
-        const response = await axios.post(`${this.BASE_URL}/product/create`, null, {
-            headers: this.getHeader(),
-            params: {
-                categoryId: formData.categoryId,
-                name: formData.name,
-                description: formData.description,
-                price: formData.price
+        const token = localStorage.getItem("token");
+        const response = await axios.post(`${this.BASE_URL}/product/create`, formData, {
+            headers: {
+                'Content-Type': 'multipart/form-data',
+                'Authorization': token ? `Bearer ${token}` : undefined
             }
         });
         return response.data;
     }
 
     static async updateProduct(formData) {
-        const response = await axios.put(`${this.BASE_URL}/product/update`, null, {
-            headers: this.getHeader(),
-            params: {
-                productId: formData.productId,
-                categoryId: formData.categoryId,
-                name: formData.name,
-                description: formData.description,
-                price: formData.price
+        try {
+            const token = localStorage.getItem("token");
+            
+            // Log request details
+            console.log('=== DEBUG: Request Details ===');
+            console.log('URL:', `${this.BASE_URL}/product/update`);
+            console.log('Headers:', {
+                'Content-Type': 'multipart/form-data',
+                'Authorization': `Bearer ${token}`
+            });
+            console.log('FormData content:');
+            for (let [key, value] of formData.entries()) {
+                if (key === 'image') {
+                    console.log('image:', value ? `File: ${value.name}` : 'No image');
+                } else {
+                    console.log(`${key}:`, value, `(type: ${typeof value})`);
+                }
             }
-        });
-        return response.data;
+
+            const response = await axios.put(
+                `${this.BASE_URL}/product/update`,
+                formData,
+                {
+                    headers: {
+                        'Content-Type': 'multipart/form-data',
+                        'Authorization': `Bearer ${token}`
+                    }
+                }
+            );
+
+            console.log('=== DEBUG: Response Success ===');
+            console.log('Status:', response.status);
+            console.log('Data:', response.data);
+
+            return response.data;
+        } catch (error) {
+            console.error('=== DEBUG: Error Details ===');
+            console.error('Request Config:', {
+                url: error.config?.url,
+                method: error.config?.method,
+                headers: error.config?.headers
+            });
+            console.error('Response Error:', {
+                status: error.response?.status,
+                statusText: error.response?.statusText,
+                data: error.response?.data
+            });
+            throw error;
+        }
     }
 
     static async getAllProducts() {

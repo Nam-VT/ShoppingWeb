@@ -34,7 +34,7 @@ public class SecurityConfig {
                 .requestMatchers("/auth/**").permitAll()
                 .requestMatchers("/uploads/**").permitAll()  // Thêm dòng này
                 .requestMatchers("/category/get-all-category", "/category/get-category-by-id").permitAll()
-                .requestMatchers("/product/get-all-product", "/product/get-product-by-id","/product/get-product-by-category", "/product/search", "/product/create").permitAll()
+                .requestMatchers("/product/get-all-product", "/product/get-product-by-id","/product/get-product-by-category", "/product/search", "/product/create", "/product/update", "/product/delete").permitAll()
                 .requestMatchers("/user/info").authenticated()
                 .requestMatchers("/admin/**").hasRole("ADMIN")
                 .requestMatchers("/bot/chat").permitAll() 

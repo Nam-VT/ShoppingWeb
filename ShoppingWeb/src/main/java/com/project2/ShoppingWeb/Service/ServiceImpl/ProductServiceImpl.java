@@ -6,10 +6,14 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
+import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
 
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.project2.ShoppingWeb.Entity.Category;
@@ -76,42 +80,93 @@ public class ProductServiceImpl implements ProductService {
 
     @Override
     public Product createProduct(List<Long> categoryIds,  MultipartFile image, String name, String description, BigDecimal price) {
-        String imageUrl = fileStorageService.storeProductImage(image);
-        
-        List<Category> categories = categoryRepo.findAllById(categoryIds);
-        if(categories.isEmpty()) {
-            throw new NotFoundException("Category not found");
+        try {
+            log.info("Creating product with name: {}", name);
+            
+            // Validate input
+            if (categoryIds == null || categoryIds.isEmpty()) {
+                throw new NotFoundException("At least one category is required");
+            }
+            
+            // Store image
+            String imageUrl = fileStorageService.storeProductImage(image, null);
+            
+            // Find categories
+            List<Category> categories = categoryRepo.findAllById(categoryIds);
+            if(categories.isEmpty()) {
+                throw new NotFoundException("No categories found with the provided IDs");
+            }
+            
+            // Create product with default values
+            Product product = Product.builder()
+                    .name(name)
+                    .description(description)
+                    .price(price)
+                    .imageUrl(imageUrl)
+                    .categories(categories)
+                    .stockQuantity(0) // Default value
+                    .soldQuantity(0)  // Default value
+                    .isActive(true)   // Default value
+                    .build();
+            
+            Product savedProduct = productRepo.save(product);
+            log.info("Product created successfully with ID: {}", savedProduct.getId());
+            return savedProduct;
+        } catch (Exception e) {
+            log.error("Error creating product: {}", e.getMessage(), e);
+            throw new RuntimeException("Failed to create product: " + e.getMessage(), e);
         }
-
-        Product product = Product.builder()
-                .name(name)
-                .description(description)
-                .price(price)
-                .imageUrl(imageUrl)
-                .build();
-
-        return productRepo.save(product);    
     }
 
-    @Override   
-    public Product updateProduct(Long id, List<Long> categoryIds, String name, String description, BigDecimal price) {
-        // TODO Auto-generated method stub
-        Product product = productRepo.findById(id).orElse(null);
-        if (product == null) {
-            throw new NotFoundException("Product with ID " + id + " not found");
-        }
-        List<Category> categories = categoryRepo.findAllById(categoryIds);
-        if(categories.isEmpty()) {
-            throw new NotFoundException("Category not found");
-        }
+    @Override
+    @Transactional
+    public Product updateProduct(Long productId, Long categoryId, MultipartFile image, 
+        String name, String description, BigDecimal price) {
         
-        product.setCategories(categories);
-        product.setName(name);
-        product.setDescription(description);
-        product.setPrice(price);
-
-        productRepo.save(product);
-        return product;
+        try {
+            log.info("Updating product ID: {}", productId);
+            
+            // Find product
+            Product product = productRepo.findById(productId)
+                .orElseThrow(() -> new NotFoundException("Product not found with ID: " + productId));
+            
+            // Find category
+            Category category = categoryRepo.findById(categoryId)
+                .orElseThrow(() -> new NotFoundException("Category not found with ID: " + categoryId));
+            
+            // Update basic info
+            product.setName(name);
+            product.setDescription(description);
+            product.setPrice(price);
+            product.setUpdatedAt(LocalDateTime.now());
+            
+            // Update image if provided
+            if (image != null && !image.isEmpty()) {
+                String currentImageUrl = product.getImageUrl();
+                try {
+                    String newImageUrl = fileStorageService.storeProductImage(image, currentImageUrl);
+                    product.setImageUrl(newImageUrl);
+                } catch (Exception e) {
+                    log.error("Error updating product image: {}", e.getMessage());
+                    throw new RuntimeException("Failed to update product image", e);
+                }
+            }
+            
+            // Update category - use ArrayList instead of Collections.singletonList
+            List<Category> categories = new ArrayList<>();
+            categories.add(category);
+            product.setCategories(categories);
+            
+            Product updatedProduct = productRepo.save(product);
+            log.info("Product updated successfully: {}", updatedProduct.getId());
+            return updatedProduct;
+        } catch (NotFoundException e) {
+            log.error("Not found error: {}", e.getMessage());
+            throw e;
+        } catch (Exception e) {
+            log.error("Error updating product: {}", e.getMessage());
+            throw new RuntimeException("Failed to update product: " + e.getMessage(), e);
+        }
     }
 
     @Override

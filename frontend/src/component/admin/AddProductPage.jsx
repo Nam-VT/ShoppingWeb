@@ -61,10 +61,19 @@ const AddProductPage = () => {
             formDataToSend.append('price', formData.price);
             formDataToSend.append('image', formData.image);
 
+            console.log('Sending data:', {
+                categoryIds: formData.categoryId,
+                name: formData.name,
+                description: formData.description,
+                price: formData.price,
+                image: formData.image
+            });
+
             await ApiService.addProduct(formDataToSend);
             setMessage('Product added successfully');
             setTimeout(() => navigate('/admin/products'), 2000);
         } catch (error) {
+            console.error('Error:', error);
             setMessage(error.message || 'Failed to add product');
         } finally {
             setLoading(false);
