@@ -1,5 +1,8 @@
 package com.project2.ShoppingWeb.Entity;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -19,8 +22,14 @@ public class Review {
     private Long id;
 
     @ManyToOne
+    @JsonBackReference
     @JoinColumn(name = "product_id", nullable = false)
     private Product product; // Sản phẩm được đánh giá
+
+    @ManyToOne
+    @JsonIgnore
+    @JoinColumn(name = "user_id", nullable = false)
+    private User user; // Người dùng đánh giá
 
     @Column(nullable = false)
     private String customerName; // Tên khách hàng

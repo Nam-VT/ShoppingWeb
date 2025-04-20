@@ -42,14 +42,14 @@ public class User {
 
     private UserRole role;
 
-    @JsonManagedReference
+    @JsonManagedReference(value = "user-address")
     @OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL, mappedBy = "user")
     private Address address;
 
 
     private String phoneNumber;
 
-    @JsonManagedReference
+    @JsonManagedReference(value = "user-items")
     @OneToMany(mappedBy = "user", fetch = FetchType.LAZY, cascade = CascadeType.ALL)   
     private List<OrderItem> orderItemlist;
 

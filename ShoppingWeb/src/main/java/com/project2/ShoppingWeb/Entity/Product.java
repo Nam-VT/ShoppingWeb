@@ -54,6 +54,10 @@ public class Product {
     @Builder.Default
     private boolean isActive = true; // Trạng thái sản phẩm
 
+    @JsonManagedReference
+    @OneToMany(mappedBy = "product", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Review> reviews; // Danh sách đánh giá sản phẩm
+
     @Column(nullable = false, updatable = false)
     @Builder.Default
     private LocalDateTime createdAt = LocalDateTime.now(); // Ngày tạo
@@ -61,6 +65,10 @@ public class Product {
     @Column(nullable = false)
     @Builder.Default
     private LocalDateTime updatedAt = LocalDateTime.now(); // Ngày cập nhật
+
+    @JsonManagedReference(value = "product-items")
+    @OneToMany(mappedBy = "product", cascade = CascadeType.ALL)
+    private List<OrderItem> orderItems;
 
     // Add getter and setter for isActive
     public boolean isActive() {

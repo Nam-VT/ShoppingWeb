@@ -70,4 +70,22 @@ public class GlobalExceptionHandler {
 
         return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
     }
+
+    // Xử lý lỗi người dùng đã đánh giá sản phẩm
+    @ExceptionHandler(RuntimeException.class)
+    public ResponseEntity<ApiError> handleReviewException(RuntimeException ex, WebRequest request) {
+        // Kiểm tra nội dung thông báo lỗi để xác định loại lỗi
+        if (ex.getMessage().contains("already reviewed")) {
+            ApiError errorResponse = ApiError.builder()
+                    .status(HttpStatus.BAD_REQUEST.value())
+                    .message(ex.getMessage())
+                    .path(request.getDescription(false))
+                    .timestamp(LocalDateTime.now())
+                    .build();
+            return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
+        }
+        
+        // Nếu không phải lỗi đã đánh giá, chuyển tiếp cho handler mặc định xử lý
+        return handleAllException(ex, request);
+    }
 }

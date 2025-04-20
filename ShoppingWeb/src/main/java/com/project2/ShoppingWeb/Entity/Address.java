@@ -26,7 +26,7 @@ public class Address {
     private String state;
     private String country;
     
-    @JsonBackReference
+    @JsonBackReference(value = "user-address")
     @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id")
     private User user;

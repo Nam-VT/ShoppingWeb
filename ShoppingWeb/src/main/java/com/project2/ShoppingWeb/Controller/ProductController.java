@@ -131,5 +131,18 @@ public class ProductController {
         return ResponseEntity.ok(productService.searchProduct(searchValue));
     }
 
-    
+    /**
+     * Lấy chi tiết sản phẩm kèm theo các đánh giá
+     */
+    @GetMapping("/details/{id}")
+    public ResponseEntity<?> getProductWithReviews(@PathVariable Long id) {
+        try {
+            Product product = productService.getProductById(id);
+            return ResponseEntity.ok(product);
+        } catch (Exception e) {
+            log.error("Error retrieving product details: {}", e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body("Failed to retrieve product details: " + e.getMessage());
+        }
+    }
 }

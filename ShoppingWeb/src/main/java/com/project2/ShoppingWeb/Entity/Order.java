@@ -33,7 +33,7 @@ public class Order {
     @Column(nullable = false)
     private BigDecimal totalPrice; // Tổng tiền đơn hàng
 
-    @JsonManagedReference
+    @JsonManagedReference(value = "order-items")
     @OneToMany(mappedBy = "order", cascade = CascadeType.ALL)
     private List<OrderItem> orderItems; // Danh sách sản phẩm trong đơn hàng
 

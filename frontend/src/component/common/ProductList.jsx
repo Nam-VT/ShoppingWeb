@@ -2,6 +2,7 @@ import React from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useCart } from "../context/CartContext";
 import '../../style/productList.css';
+import ApiService from "../../service/ApiService";
 
 // Thêm BASE_URL 
 const BASE_URL = 'http://localhost:8080';
@@ -13,6 +14,11 @@ const ProductList = ({products}) => {
     console.log("Products in ProductList:", products);
 
     const addToCart = (product) => {
+        if (!ApiService.isAuthenticated()) {
+            navigate("/login");
+            return;
+        }
+        
         if (product.stockQuantity > 0) {
             dispatch({type: 'ADD_ITEM', payload: product});
         } else {

@@ -33,10 +33,15 @@ export default class ApiService {
     }
 
     static async getLoggedInUserInfo() {
-        const response = await axios.get(`${this.BASE_URL}/user/info`, {
-            headers: this.getHeader()
-        });
-        return response.data;
+        try {
+            const response = await axios.get(`${this.BASE_URL}/user/info`, {
+                headers: this.getHeader()
+            });
+            return response.data;
+        } catch (error) {
+            console.error("Error fetching user info:", error);
+            return null;
+        }
     }
 
     static async getUserById(userId) {
@@ -271,6 +276,49 @@ export default class ApiService {
         } catch (error) {
             throw error;
         }
+    }
+
+    /**REVIEW ENDPOINTS */
+    static async getProductReviews(productId) {
+        const response = await axios.get(`${this.BASE_URL}/reviews/product/${productId}`);
+        return response.data;
+    }
+
+    static async createReview(review) {
+        const response = await axios.post(`${this.BASE_URL}/reviews`, review, {
+            headers: this.getHeader()
+        });
+        return response.data;
+    }
+
+    static async updateReview(reviewId, review) {
+        const response = await axios.put(`${this.BASE_URL}/reviews/${reviewId}`, review, {
+            headers: this.getHeader()
+        });
+        return response.data;
+    }
+
+    static async deleteReview(reviewId) {
+        const response = await axios.delete(`${this.BASE_URL}/reviews/${reviewId}`, {
+            headers: this.getHeader()
+        });
+        return response.data;
+    }
+
+    /**ORDER ENDPOINTS */
+    static async createOrder(orderRequest) {
+        const response = await axios.post(`${this.BASE_URL}/order/create`, orderRequest, {
+            headers: this.getHeader()
+        });
+        return response.data;
+    }
+
+    static async createVNPayUrl(orderId, amount) {
+        const response = await axios.post(`${this.BASE_URL}/payment/create`, null, {
+            headers: this.getHeader(),
+            params: { orderId, amount }
+        });
+        return response.data;
     }
 }
 

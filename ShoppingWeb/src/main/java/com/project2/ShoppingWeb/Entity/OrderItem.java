@@ -25,12 +25,12 @@ public class OrderItem {
     @Builder.Default
     private OrderStatus status = OrderStatus.PENDING; // Trạng thái đơn hàng
 
-    @JsonBackReference
+    @JsonBackReference(value = "order-items")
     @ManyToOne
     @JoinColumn(name = "order_id")
     private Order order; // Đơn hàng chứa sản phẩm
 
-    @JsonBackReference
+    @JsonBackReference(value = "product-items")
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "product_id")
     private Product product; // Sản phẩm thuộc đơn hàng
@@ -41,7 +41,7 @@ public class OrderItem {
     @Column(nullable = false)
     private BigDecimal price; // Giá sản phẩm tại thời điểm mua
 
-    @JsonBackReference
+    @JsonBackReference(value = "user-items")
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id")
     private User user; // Người mua
