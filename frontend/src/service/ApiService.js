@@ -194,10 +194,32 @@ export default class ApiService {
 
     /**ADDRESS */
     static async saveAddress(address) {
-        const response = await axios.post(`${this.BASE_URL}/address/save`, address, {
-            headers: this.getHeader()
-        });
-        return response.data;
+        try {
+            console.log("Saving address:", address);
+            
+            // Đảm bảo chỉ gửi các trường cần thiết
+            const addressDto = {
+                id: address.id || null,
+                street: address.street || '',
+                city: address.city || '',
+                state: address.state || '',
+                country: address.country || ''
+            };
+            
+            const response = await axios.post(`${this.BASE_URL}/address/save`, addressDto, {
+                headers: this.getHeader(),
+                withCredentials: true
+            });
+            
+            console.log("Address saved successfully:", response.data);
+            return response.data;
+        } catch (error) {
+            console.error("Error saving address:", error);
+            if (error.response) {
+                console.error("Error response:", error.response.data);
+            }
+            throw error;
+        }
     }
 
     /**CHAT BOT */
@@ -306,19 +328,89 @@ export default class ApiService {
     }
 
     /**ORDER ENDPOINTS */
-    static async createOrder(orderRequest) {
-        const response = await axios.post(`${this.BASE_URL}/order/create`, orderRequest, {
-            headers: this.getHeader()
-        });
-        return response.data;
+    static async createOrder(orderData) {
+        try {
+            console.log("Creating order:", orderData);
+            
+            // Kiểm tra xem dữ liệu có đúng định dạng không
+            const orderItems = orderData.orderItems || orderData.items;
+            
+            if (!orderItems || !Array.isArray(orderItems)) {
+                throw new Error("Dữ liệu đơn hàng không hợp lệ: Thiếu danh sách sản phẩm");
+            }
+            
+            // Đảm bảo dữ liệu gửi đi phù hợp với OrderDTO từ backend
+            const orderDTO = {
+                totalPrice: orderData.totalPrice,
+                paymentMethod: orderData.paymentMethod,
+                shippingAddress: orderData.shippingAddress,
+                status: orderData.status,
+                orderItems: orderItems.map(item => ({
+                    productId: item.productId,
+                    quantity: item.quantity,
+                    price: item.price
+                }))
+            };
+            
+            const response = await axios.post(`${this.BASE_URL}/order/create`, orderDTO, {
+                headers: this.getHeader(),
+                withCredentials: true
+            });
+            
+            console.log("Order creation response:", response);
+            return response.data;
+        } catch (error) {
+            console.error("Order creation error:", error);
+            if (error.response) {
+                console.error("Error response data:", error.response.data);
+            }
+            throw error;
+        }
     }
 
     static async createVNPayUrl(orderId, amount) {
-        const response = await axios.post(`${this.BASE_URL}/payment/create`, null, {
-            headers: this.getHeader(),
-            params: { orderId, amount }
-        });
-        return response.data;
+        try {
+            const response = await axios.post(`${this.BASE_URL}/payment/create`, null, {
+                headers: this.getHeader(),
+                params: { orderId, amount }
+            });
+            return response.data;
+        } catch (error) {
+            console.error("VNPAY error:", error);
+            throw error;
+        }
+    }
+
+    static async createZaloPayUrl(orderId, amount) {
+        try {
+            const response = await axios.post(`${this.BASE_URL}/zalopay/create-order`, {
+                amount: Math.round(amount),  // ZaloPay yêu cầu số nguyên
+                orderId: orderId  // Thêm orderId vào request
+            }, {
+                headers: this.getHeader()
+            });
+            return response.data;
+        } catch (error) {
+            console.error("ZaloPay error:", error.response || error);
+            throw error;
+        }
+    }
+
+    static async getOrderStatus(orderId) {
+        const token = this.getToken();
+        console.log("Checking order status for ID:", orderId);
+        try {
+            const response = await axios.get(`${this.BASE_URL}/api/orders/${orderId}/status`, {
+                headers: {
+                    'Authorization': `Bearer ${token}`
+                }
+            });
+            console.log("Order status response:", response.data);
+            return response.data;
+        } catch (error) {
+            console.error("Error checking order status:", error);
+            throw error;
+        }
     }
 }
 

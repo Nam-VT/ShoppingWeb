@@ -1,16 +1,12 @@
 package com.project2.ShoppingWeb.Service.ServiceImpl;
 
-import java.io.IOException;
+
 import java.math.BigDecimal;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.nio.file.StandardCopyOption;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
-import java.util.Collections;
+
 import java.util.List;
-import java.util.UUID;
+
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;

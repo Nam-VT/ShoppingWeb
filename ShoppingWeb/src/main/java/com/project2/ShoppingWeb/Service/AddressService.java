@@ -1,9 +1,8 @@
 package com.project2.ShoppingWeb.Service;
 
-import com.project2.ShoppingWeb.Entity.Address;
+import com.project2.ShoppingWeb.DTO.AddressDto;
 
 public interface AddressService {
-    public Address saveAndUpdateAddress(Address  address); 
-    
+    AddressDto saveAndUpdateAddress(AddressDto addressDto);
 }
 

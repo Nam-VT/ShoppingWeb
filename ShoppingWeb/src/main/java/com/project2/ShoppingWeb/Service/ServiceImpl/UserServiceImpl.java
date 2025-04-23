@@ -22,8 +22,6 @@ import com.project2.ShoppingWeb.Repository.UserRepo;
 import com.project2.ShoppingWeb.DTO.ChangePasswordRequest;
 
 
-import com.project2.ShoppingWeb.Enums.UserRole;
-
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 

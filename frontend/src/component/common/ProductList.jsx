@@ -14,11 +14,7 @@ const ProductList = ({products}) => {
     console.log("Products in ProductList:", products);
 
     const addToCart = (product) => {
-        if (!ApiService.isAuthenticated()) {
-            navigate("/login");
-            return;
-        }
-        
+        // Thêm sản phẩm vào giỏ hàng mà không cần kiểm tra đăng nhập
         if (product.stockQuantity > 0) {
             dispatch({type: 'ADD_ITEM', payload: product});
         } else {

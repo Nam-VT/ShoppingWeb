@@ -1,7 +1,5 @@
 package com.project2.ShoppingWeb.Entity;
 
-import java.time.LocalDateTime;
-
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -30,8 +28,6 @@ public class Address {
     @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id")
     private User user;
-
-    private  LocalDateTime createdAt;
 
     public String getFullAddress() {
         return street + ", " + city + ", " + state + ", " + country;

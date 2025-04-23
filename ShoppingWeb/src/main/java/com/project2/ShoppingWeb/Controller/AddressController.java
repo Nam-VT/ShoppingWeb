@@ -6,7 +6,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.project2.ShoppingWeb.Entity.Address;
+import com.project2.ShoppingWeb.DTO.AddressDto;
 import com.project2.ShoppingWeb.Service.AddressService;
 
 import lombok.RequiredArgsConstructor;
@@ -19,7 +19,7 @@ public class AddressController {
     private final AddressService addressService;
 
     @PostMapping("/save")
-    public ResponseEntity<Address> saveAndUpdateAddress(@RequestBody Address address) {
-        return ResponseEntity.ok(addressService.saveAndUpdateAddress(address));
+    public ResponseEntity<AddressDto> saveAndUpdateAddress(@RequestBody AddressDto addressDto) {
+        return ResponseEntity.ok(addressService.saveAndUpdateAddress(addressDto));
     }
 }

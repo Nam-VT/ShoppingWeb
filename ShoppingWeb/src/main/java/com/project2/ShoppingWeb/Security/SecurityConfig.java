@@ -31,6 +31,7 @@ public class SecurityConfig {
             .csrf(AbstractHttpConfigurer::disable)
             .cors(Customizer.withDefaults())
             .authorizeHttpRequests(request -> request
+                .requestMatchers(org.springframework.http.HttpMethod.OPTIONS, "/**").permitAll()
                 .requestMatchers("/auth/**").permitAll()
                 .requestMatchers("/uploads/**").permitAll()
                 .requestMatchers("/category/get-all-category", "/category/get-category-by-id").permitAll()
@@ -40,7 +41,10 @@ public class SecurityConfig {
                 .requestMatchers("/bot/chat").permitAll() 
                 .requestMatchers("/reviews/product/**").permitAll()
                 .requestMatchers("/payment/**").permitAll()
+                .requestMatchers("/zalopay/**").permitAll()
                 .requestMatchers("/api/config/**").permitAll()
+                .requestMatchers("/address/**").permitAll()
+                .requestMatchers("/order/**").permitAll()
                 .anyRequest().authenticated()
             )
             .sessionManagement(manager -> manager
