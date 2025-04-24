@@ -27,7 +27,7 @@ import com.project2.ShoppingWeb.Enums.UserRole;
 public class User {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private int id;
+    private long id;
 
     @NotBlank(message = "Name is required")
     @Column(unique = true)
@@ -46,6 +46,9 @@ public class User {
     @OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL, mappedBy = "user")
     private Address address;
 
+    @JsonManagedReference(value = "user-orders")
+    @OneToMany(mappedBy = "user", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    private List<Order> orderList;
 
     private String phoneNumber;
 

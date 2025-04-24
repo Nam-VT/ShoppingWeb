@@ -5,4 +5,5 @@ public enum PaymentStatus {
     CONFIRMED, // Đã xác nhận
     CANCELLED, // Đã hủy
     FAILED // Thất bại
+, PROCESSING, PAID
 }

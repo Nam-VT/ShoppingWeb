@@ -46,7 +46,7 @@ public class ReviewServiceImpl implements ReviewService {
     
     @Override
     @Transactional
-    public Review createReview(Review review, Long productId, int userId) {
+    public Review createReview(Review review, Long productId, long userId) {
         Product product = productRepo.findById(productId)
             .orElseThrow(() -> new RuntimeException("Product not found"));
         User user = userRepo.findById(userId)
@@ -67,7 +67,7 @@ public class ReviewServiceImpl implements ReviewService {
     
     @Override
     @Transactional
-    public Review updateReview(Review review, int userId) {
+    public Review updateReview(Review review, long userId) {
         User user = userRepo.findById(userId)
             .orElseThrow(() -> new RuntimeException("User not found"));
         
@@ -89,7 +89,7 @@ public class ReviewServiceImpl implements ReviewService {
 
     @Override
     @Transactional
-    public void deleteReview(Long reviewId, int userId) {
+    public void deleteReview(Long reviewId, long userId) {
         // Kiểm tra nếu review tồn tại và thuộc về user
         Review review = reviewRepo.findById(reviewId)
             .orElseThrow(() -> new RuntimeException("Review not found"));

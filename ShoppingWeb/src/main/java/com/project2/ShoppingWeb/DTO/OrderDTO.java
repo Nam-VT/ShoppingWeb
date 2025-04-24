@@ -4,6 +4,9 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
 
+import com.project2.ShoppingWeb.Enums.OrderStatus;
+import com.project2.ShoppingWeb.Enums.PaymentStatus;
+
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -23,5 +26,6 @@ public class OrderDTO {
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
     private String paymentMethod;
-    private String status;
+    private OrderStatus status;
+    private PaymentStatus paymentStatus;
 }

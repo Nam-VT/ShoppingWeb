@@ -24,15 +24,15 @@ public interface ReviewService {
     /**
      * Tạo đánh giá mới
      */
-    Review createReview(Review review, Long productId, int userId);
+    Review createReview(Review review, Long productId, long userId);
     
     /**
      * Cập nhật đánh giá
      */
-    Review updateReview(Review review, int userId);
+    Review updateReview(Review review, long userId);
     
     /**
      * Xóa đánh giá
      */
-    void deleteReview(Long reviewId, int userId);
+    void deleteReview(Long reviewId, long userId);
 }

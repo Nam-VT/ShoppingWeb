@@ -1,6 +1,7 @@
 package com.project2.ShoppingWeb.Mapper;
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -13,14 +14,17 @@ import com.project2.ShoppingWeb.Entity.OrderItem;
 import com.project2.ShoppingWeb.Entity.Product;
 import com.project2.ShoppingWeb.Entity.User;
 import com.project2.ShoppingWeb.Enums.OrderStatus;
+import com.project2.ShoppingWeb.Enums.PaymentStatus;
 import com.project2.ShoppingWeb.Repository.OrderRepo;
 import com.project2.ShoppingWeb.Repository.ProductRepo;
 import com.project2.ShoppingWeb.Repository.UserRepo;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 @Component
 @RequiredArgsConstructor
+@Slf4j
 public class OrderMapper {
     
     private final ProductRepo productRepo;
@@ -31,12 +35,11 @@ public class OrderMapper {
     public OrderDTO toDto(Order entity) {
         if (entity == null) return null;
         
-        List<OrderItemDTO> orderItemsDto = null;
-        if (entity.getOrderItems() != null) {
-            orderItemsDto = entity.getOrderItems().stream()
-                    .map(this::toDto)
-                    .collect(Collectors.toList());
-        }
+        List<OrderItemDTO> orderItemsDto = entity.getOrderItems() == null ? 
+            new ArrayList<>() : 
+            entity.getOrderItems().stream()
+                .map(this::toDto)
+                .collect(Collectors.toList());
         
         return OrderDTO.builder()
                 .id(entity.getId())
@@ -45,6 +48,9 @@ public class OrderMapper {
                 .shippingAddress(entity.getShippingAddress())
                 .totalPrice(entity.getTotalPrice())
                 .orderItems(orderItemsDto)
+                .status(entity.getStatus())
+                .paymentStatus(entity.getPaymentStatus())
+                .paymentMethod(entity.getPaymentMethod())
                 .createdAt(entity.getCreatedAt())
                 .updatedAt(entity.getUpdatedAt())
                 .build();
@@ -64,9 +70,11 @@ public class OrderMapper {
         order.setCustomerEmail(dto.getCustomerEmail());
         order.setShippingAddress(dto.getShippingAddress());
         order.setTotalPrice(dto.getTotalPrice());
+        order.setPaymentMethod(dto.getPaymentMethod());
         
-        // Các trường ngày giờ thường được tạo tự động trong entity
-        // nên không cần set từ DTO, trừ khi cần thiết
+        order.setStatus(dto.getStatus() != null ? dto.getStatus() : OrderStatus.PENDING);
+        
+        order.setPaymentStatus(dto.getPaymentStatus() != null ? dto.getPaymentStatus() : PaymentStatus.PENDING);
         
         return order;
     }
@@ -84,14 +92,37 @@ public class OrderMapper {
         Product product = null;
         if (dto.getProductId() != null) {
             product = productRepo.findById(dto.getProductId())
-                    .orElseThrow(() -> new RuntimeException("Product not found with id: " + dto.getProductId()));
+                .orElse(null);
+            if (product == null) {
+                log.warn("Product with id {} not found", dto.getProductId());
+            }
         }
         
         item.setProduct(product);
         item.setQuantity(dto.getQuantity());
         item.setPrice(dto.getPrice());
-        item.setStatus(dto.getStatus() != null ? OrderStatus.valueOf(dto.getStatus()) : OrderStatus.PENDING);
+        
+        // Chuyển đổi String thành OrderStatus
+        if (dto.getStatus() != null) {
+            try {
+                item.setStatus(OrderStatus.valueOf(dto.getStatus()));
+            } catch (IllegalArgumentException e) {
+                log.warn("Invalid status value: {}. Setting to PENDING.", dto.getStatus());
+                item.setStatus(OrderStatus.PENDING);
+            }
+        } else {
+            item.setStatus(OrderStatus.PENDING);
+        }
+        
         item.setOrder(order);
+        
+        // Lấy user từ userId trong DTO nếu có
+        if (dto.getUserId() != null) {
+            User user = userRepo.findById(dto.getUserId()).orElse(null);
+            if (user != null) {
+                item.setUser(user);
+            }
+        }
         
         return item;
     }
@@ -101,15 +132,20 @@ public class OrderMapper {
         if (entity == null) return null;
         
         Product product = entity.getProduct();
+        User user = entity.getUser();
         
         return OrderItemDTO.builder()
                 .id(entity.getId())
+                .orderId(entity.getOrder() != null ? entity.getOrder().getId() : null)
                 .productId(product != null ? product.getId() : null)
                 .productName(product != null ? product.getName() : null)
                 .productImageUrl(product != null ? product.getImageUrl() : null)
                 .quantity(entity.getQuantity())
                 .price(entity.getPrice())
                 .status(entity.getStatus() != null ? entity.getStatus().name() : null)
+                .userId(user != null ? user.getId() : null)
+                .userName(user != null ? user.getName() : null)
+                .createdAt(entity.getCreatedAt())
                 .build();
     }
 }
