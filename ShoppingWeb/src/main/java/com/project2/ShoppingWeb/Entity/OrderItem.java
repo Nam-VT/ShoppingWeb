@@ -22,6 +22,7 @@ public class OrderItem {
     private Long id;
 
     @Column(nullable = false)
+    @Enumerated(EnumType.STRING)
     @Builder.Default
     private OrderStatus status = OrderStatus.PENDING; // Trạng thái đơn hàng
 

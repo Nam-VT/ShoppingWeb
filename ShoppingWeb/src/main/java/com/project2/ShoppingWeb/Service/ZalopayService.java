@@ -11,6 +11,9 @@ import org.springframework.stereotype.Service;
 
 import com.project2.ShoppingWeb.Config.ZalopayConfig;
 import com.project2.ShoppingWeb.Crypto.HMACUtil;
+import com.project2.ShoppingWeb.Entity.Order;
+import com.project2.ShoppingWeb.Repository.OrderRepo;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 import lombok.RequiredArgsConstructor;
 import java.io.BufferedReader;
@@ -23,7 +26,8 @@ import java.util.*;
 public class ZalopayService {
     
     private final ZalopayConfig zalopayConfig;
-
+    private final OrderRepo orderRepo;
+    
     private String getCurrentTimeString(String format) {
         Calendar cal = new GregorianCalendar(TimeZone.getTimeZone("GMT+7"));
         SimpleDateFormat fmt = new SimpleDateFormat(format);
@@ -33,6 +37,17 @@ public class ZalopayService {
 
     public String createOrder(Map<String, Object> orderRequest) {
         try {
+            // Lấy orderId nếu có
+            Long orderId = null;
+            if (orderRequest.containsKey("orderId")) {
+                try {
+                    orderId = Long.valueOf(orderRequest.get("orderId").toString());
+                    System.out.println("Received orderID: " + orderId);
+                } catch (NumberFormatException e) {
+                    System.out.println("Invalid orderId format: " + orderRequest.get("orderId"));
+                }
+            }
+            
             // Sử dụng app_trans_id từ request nếu có, nếu không thì tạo mới
             String appTransId;
             if (orderRequest.containsKey("app_trans_id")) {
@@ -88,6 +103,18 @@ public class ZalopayService {
                     }
 
                     System.out.println("Zalopay Response: " + resultJsonStr.toString());
+                    
+                    // Kiểm tra response từ ZaloPay
+                    ObjectMapper objectMapper = new ObjectMapper();
+                    Map<String, Object> responseData = objectMapper.readValue(resultJsonStr.toString(), Map.class);
+                    
+                    // Nếu tạo order thành công và có orderId, cập nhật transactionId
+                    if (responseData.containsKey("return_code") && 
+                        Integer.parseInt(responseData.get("return_code").toString()) == 1 && 
+                        orderId != null) {
+                        
+                        updateOrderTransactionId(orderId, appTransId);
+                    }
 
                     return resultJsonStr.toString();
                 }
@@ -125,6 +152,31 @@ public class ZalopayService {
         } catch (Exception e) {
             e.printStackTrace();
             return "{\"error\": \"Failed to get order status: " + e.getMessage() + "\"}";
+        }
+    }
+    
+    /**
+     * Cập nhật transactionId cho đơn hàng
+     * @param orderId ID của đơn hàng
+     * @param transactionId ID giao dịch từ ZaloPay (app_trans_id)
+     * @return true nếu cập nhật thành công, false nếu không
+     */
+    public boolean updateOrderTransactionId(Long orderId, String transactionId) {
+        try {
+            Optional<Order> orderOpt = orderRepo.findById(orderId);
+            if (orderOpt.isPresent()) {
+                Order order = orderOpt.get();
+                order.setTransactionId(transactionId);
+                orderRepo.save(order);
+                System.out.println("Updated transaction ID for order " + orderId + ": " + transactionId);
+                return true;
+            } else {
+                System.out.println("Order not found with ID: " + orderId);
+                return false;
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            return false;
         }
     }
 }

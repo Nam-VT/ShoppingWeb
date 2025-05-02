@@ -11,6 +11,11 @@ public interface OrderService {
     List<OrderDTO> getCurrentUserOrders();
     OrderDTO updateOrderStatus(Long orderId, String status);
     OrderDTO updatePaymentStatus(Long orderId, String status);
+
+    List<OrderDTO> getAllOrders();
+    List<OrderDTO> getOrdersByStatus(String status);
+    List<OrderDTO> getOrdersByUserId(Long userId);
+    List<OrderDTO> deleteOrder(Long orderId);
 }
  
 

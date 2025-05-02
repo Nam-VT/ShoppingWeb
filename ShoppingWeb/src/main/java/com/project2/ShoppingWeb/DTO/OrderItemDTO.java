@@ -21,7 +21,7 @@ public class OrderItemDTO {
     private String productImageUrl;
     private int quantity;
     private BigDecimal price;
-    private Long userId;
+    private Integer userId;
     private String userName;
     private LocalDateTime createdAt;
 }

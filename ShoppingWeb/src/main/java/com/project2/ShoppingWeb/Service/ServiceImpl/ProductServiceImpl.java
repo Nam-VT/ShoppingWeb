@@ -3,10 +3,7 @@ package com.project2.ShoppingWeb.Service.ServiceImpl;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-
-import java.util.List;
-
+import java.util.*;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -32,47 +29,6 @@ public class ProductServiceImpl implements ProductService {
     private final ProductRepo productRepo;
     private final CategoryRepo categoryRepo;
     private final FileStorageService fileStorageService;
-    
-    // private LocalImageService localImageService;
-
-    // @Override
-    // public Product createProduct(List<Long> categoryIds, MultipartFile image, String name, String description, BigDecimal price) {
-    //     // TODO Auto-generated method stub
-    //     List<Category> categories = categoryRepository.findAllById(categoryIds);
-    //     String imagePath = localImageService.saveImage(image);
-        
-    //     Product product = new Product();
-    //     product.setCategory(category);
-    //     product.setName(name);
-    //     product.setDescription(description);
-    //     product.setPrice(price);
-    //     product.setImage(imagePath);
-
-    //     productRepo.save(product);
-    //     return product;  
-        
-    // }
-
-    // @Override   
-    // public Product updateProduct(Long id, List<Long> categoryIds, MultipartFile image, String name, String description, BigDecimal price) {
-    //     // TODO Auto-generated method stub
-    //     Product product = productRepo.findById(id).orElse(null);
-    //     if (product == null) {
-    //         throw new NotFoundException("Product with ID " + id + " not found");
-    //     }
-
-    //     List<Category> categories = categoryRepository.findAllById(categoryIds);
-    //     String imagePath = localImageService.saveImage(image);
-        
-    //     product.setCategory(category);
-    //     product.setName(name);
-    //     product.setDescription(description);
-    //     product.setPrice(price);
-    //     product.setImage(imagePath);
-
-    //     productRepo.save(product);
-    //     return product;
-    // }
 
     @Override
     public Product createProduct(List<Long> categoryIds,  MultipartFile image, String name, String description, BigDecimal price) {
@@ -204,4 +160,5 @@ public class ProductServiceImpl implements ProductService {
     public List<Product> searchProduct(String searchValue) {
         return productRepo.findByNameContainingIgnoreCaseOrDescriptionContainingIgnoreCase(searchValue, searchValue);
     }
+
 }   

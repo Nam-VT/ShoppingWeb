@@ -17,6 +17,7 @@ import com.project2.ShoppingWeb.Repository.UserRepo;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+
 @Service
 @RequiredArgsConstructor
 @Slf4j
@@ -46,10 +47,13 @@ public class ReviewServiceImpl implements ReviewService {
     
     @Override
     @Transactional
-    public Review createReview(Review review, Long productId, long userId) {
+    public Review createReview(Review review, Long productId, Long userId) {
+        log.info("Creating review for productId: {} by userId: {}", productId, userId);
+        
         Product product = productRepo.findById(productId)
             .orElseThrow(() -> new RuntimeException("Product not found"));
-        User user = userRepo.findById(userId)
+        
+        User user = userRepo.findById(userId.intValue())
             .orElseThrow(() -> new RuntimeException("User not found"));
         
         // Kiểm tra xem người dùng đã đánh giá sản phẩm này chưa
@@ -62,20 +66,23 @@ public class ReviewServiceImpl implements ReviewService {
         review.setCreatedAt(LocalDateTime.now());
         review.setUpdatedAt(LocalDateTime.now());
         
+        log.info("Saving review: {}", review);
         return reviewRepo.save(review);
     }
     
     @Override
     @Transactional
-    public Review updateReview(Review review, long userId) {
-        User user = userRepo.findById(userId)
+    public Review updateReview(Review review, Long userId) {
+        log.info("Updating review: {} for userId: {}", review.getId(), userId);
+        
+        User user = userRepo.findById(userId.intValue())
             .orElseThrow(() -> new RuntimeException("User not found"));
         
         // Kiểm tra nếu review tồn tại và thuộc về user
         Review existingReview = reviewRepo.findById(review.getId())
             .orElseThrow(() -> new RuntimeException("Review not found"));
             
-        if (existingReview.getUser().getId() != userId) {
+        if (existingReview.getUser().getId() != userId.intValue()) {
             throw new RuntimeException("You can only update your own reviews");
         }
         
@@ -84,20 +91,24 @@ public class ReviewServiceImpl implements ReviewService {
         existingReview.setRating(review.getRating());
         existingReview.setUpdatedAt(LocalDateTime.now());
         
+        log.info("Saving updated review: {}", existingReview);
         return reviewRepo.save(existingReview);
     }
 
     @Override
     @Transactional
-    public void deleteReview(Long reviewId, long userId) {
+    public void deleteReview(Long reviewId, Long userId) {
+        log.info("Deleting review: {} for userId: {}", reviewId, userId);
+        
         // Kiểm tra nếu review tồn tại và thuộc về user
         Review review = reviewRepo.findById(reviewId)
             .orElseThrow(() -> new RuntimeException("Review not found"));
             
-        if (review.getUser().getId() != userId) {
+        if (review.getUser().getId() != userId.intValue()) {
             throw new RuntimeException("You can only delete your own reviews");
         }
         
+        log.info("Deleting review with ID: {}", reviewId);
         reviewRepo.delete(review);
     }
 }

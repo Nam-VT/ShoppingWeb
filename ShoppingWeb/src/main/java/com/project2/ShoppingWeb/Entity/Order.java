@@ -62,4 +62,7 @@ public class Order {
     @Column(nullable = false)
     @Builder.Default
     private LocalDateTime updatedAt = LocalDateTime.now(); // Ngày cập nhật đơn
+
+    @Column
+    private String transactionId; // Lưu app_trans_id của ZaloPay
 }

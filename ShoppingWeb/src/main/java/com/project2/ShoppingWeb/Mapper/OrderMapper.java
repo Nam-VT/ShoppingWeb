@@ -1,6 +1,6 @@
 package com.project2.ShoppingWeb.Mapper;
 
-import java.math.BigDecimal;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -53,6 +53,7 @@ public class OrderMapper {
                 .paymentMethod(entity.getPaymentMethod())
                 .createdAt(entity.getCreatedAt())
                 .updatedAt(entity.getUpdatedAt())
+                .transactionId(entity.getTransactionId())
                 .build();
     }
     
@@ -75,6 +76,7 @@ public class OrderMapper {
         order.setStatus(dto.getStatus() != null ? dto.getStatus() : OrderStatus.PENDING);
         
         order.setPaymentStatus(dto.getPaymentStatus() != null ? dto.getPaymentStatus() : PaymentStatus.PENDING);
+        order.setTransactionId(dto.getTransactionId());
         
         return order;
     }
@@ -117,7 +119,7 @@ public class OrderMapper {
         item.setOrder(order);
         
         // Lấy user từ userId trong DTO nếu có
-        if (dto.getUserId() != null) {
+        if (dto.getUserId() != null && dto.getUserId() != 0) {
             User user = userRepo.findById(dto.getUserId()).orElse(null);
             if (user != null) {
                 item.setUser(user);

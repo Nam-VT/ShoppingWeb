@@ -2,107 +2,115 @@ import React, { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
 import '../../style/adminOrderDetails.css'
 import ApiService from "../../service/ApiService";
+import axios from "axios";
 
 
 const OrderStatus = ["PENDING", "CONFIRMED", "SHIPPED", "DELIVERED", "CANCELLED", "RETURNED"];
 
 const AdminOrderDetailsPage = () => {
     const { itemId } = useParams();
-    const [orderItems, setOrderItems] = useState([]);
+    const [order, setOrder] = useState(null);
     const [message, setMessage] = useState('');
-    const [selectedStatus, setSelectedStatus] = useState({});
-
+    const [selectedStatus, setSelectedStatus] = useState('');
 
     useEffect(() => {
         fetchOrderDetails(itemId);
     }, [itemId]);
 
-    const fetchOrderDetails = async (itemId) => {
+    const fetchOrderDetails = async (orderId) => {
         try {
-            const response = await ApiService.getOrderItemById(itemId);
-            setOrderItems(response.orderItemList)
+            const response = await ApiService.getOrderById(orderId);
+            if (response) {
+                setOrder(response);
+                setSelectedStatus(response.status);
+            }
         } catch (error) {
-            console.log(error.message || error);
+            setMessage(error.response?.data?.message || "Không thể tải thông tin đơn hàng");
         }
     }
 
-    const handleStatusChange = (orderItemId, newStatus) => {
-        setSelectedStatus({ ...selectedStatus, [orderItemId]: newStatus })
+    const handleStatusChange = (newStatus) => {
+        setSelectedStatus(newStatus);
     }
 
-    const handleSubmitStatusChange = async (orderItemId) => {
+    const handleSubmitStatusChange = async () => {
         try {
-            await ApiService.updateOrderitemStatus(orderItemId, selectedStatus[orderItemId]);
-            setMessage('order item status was successfully updated')
+            await ApiService.updateOrderStatus(itemId, selectedStatus);
+            setMessage('Cập nhật trạng thái đơn hàng thành công');
+            fetchOrderDetails(itemId);
+            
             setTimeout(() => {
                 setMessage('');
-            }, 3000)
+            }, 3000);
         } catch (error) {
-            setMessage(error.response?.data?.message || error.message || 'unable  to update order item status')
+            setMessage(error.response?.data?.message || 'Không thể cập nhật trạng thái đơn hàng');
         }
     }
 
+    if (!order) {
+        return <div>Đang tải thông tin đơn hàng...</div>;
+    }
 
     return (
         <div className="order-details-page">
             {message && <div className="message">{message}</div>}
-            <h2>Order Details</h2>
-            {orderItems.length ? (
-                orderItems.map((orderItem) => (
-                    <div key={orderItem.id} className="order-item-details">
-                        <div className="info">
-                            <h3>Order Information</h3>
-                            <p><strong>Order Item ID:</strong>{orderItem.id}</p>
-                            <p><strong>Quantity:</strong>{orderItem.quantity}</p>
-                            <p><strong>Total Price:</strong>{orderItem.price}</p>
-                            <p><strong>Order Status:</strong>{orderItem.status}</p>
-                            <p><strong>date Ordered:</strong>{new Date(orderItem.createdAt).toLocaleDateString()}</p>
-                        </div>
-                        <div className="info">
-                            <h3>User Information</h3>
-                            <p><strong>Name:</strong>{orderItem.user.name}</p>
-                            <p><strong>Email:</strong>{orderItem.user.email}</p>
-                            <p><strong>Phone:</strong>{orderItem.user.phoneNumber}</p>
-                            <p><strong>Role:</strong>{orderItem.user.role}</p>
+            <h2>Chi tiết đơn hàng #{itemId}</h2>
+            
+            <div className="order-info">
+                <h3>Thông tin đơn hàng</h3>
+                <p><strong>Ngày đặt:</strong> {new Date(order.createdAt).toLocaleDateString()}</p>
+                <p><strong>Tổng tiền:</strong> ${order.totalPrice}</p>
+                <p><strong>Trạng thái:</strong> {order.status}</p>
+                <p><strong>Phương thức thanh toán:</strong> {order.paymentMethod}</p>
+            </div>
 
-                            <div className="info">
-                                <h3>Delivery Address</h3>
-                                <p><strong>Country:</strong>{orderItem.user.address?.country}</p>
-                                <p><strong>State:</strong>{orderItem.user.address?.state}</p>
-                                <p><strong>City:</strong>{orderItem.user.address?.city}</p>
-                                <p><strong>Street:</strong>{orderItem.user.address?.street}</p>
-                                <p><strong>Zip Code:</strong>{orderItem.user.address?.zipcode}</p>
-                            </div>
-                        </div>
-                        <div>
-                            <h2>Product Information</h2>
-                            <img src={orderItem.product.imageUrl} alt={orderItem.product.name} />
-                            <p><strong>Name:</strong>{orderItem.product.name}</p>
-                            <p><strong>Description:</strong>{orderItem.product.description}</p>
-                            <p><strong>Price:</strong>{orderItem.product.price}</p>
-                        </div>
-                        <div className="status-change">
-                            <h4>Change Status</h4>
-                            <select
-                                className="status-option"
-                                value={selectedStatus[orderItem.id] || orderItem.status}
-                                onChange={(e) => handleStatusChange(orderItem.id, e.target.value)}>
+            <div className="customer-info">
+                <h3>Thông tin khách hàng</h3>
+                <p><strong>Tên:</strong> {order.customerName}</p>
+                <p><strong>Email:</strong> {order.customerEmail}</p>
+                <p><strong>Địa chỉ:</strong> {order.shippingAddress}</p>
+            </div>
 
-                                {OrderStatus.map(status => (
-                                    <option key={status} value={status}>{status}</option>
-                                ))}
-                            </select>
-                            <button className="update-status-button" onClick={() => handleSubmitStatusChange(orderItem.id)}>Update Status</button>
-                        </div>
-                    </div>
+            <div className="order-items">
+                <h3>Sản phẩm</h3>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Sản phẩm</th>
+                            <th>Số lượng</th>
+                            <th>Giá</th>
+                            <th>Tổng</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {order.orderItems.map(item => (
+                            <tr key={item.id}>
+                                <td>{item.product.name}</td>
+                                <td>{item.quantity}</td>
+                                <td>${item.price}</td>
+                                <td>${item.price * item.quantity}</td>
+                            </tr>
+                        ))}
+                    </tbody>
+                </table>
+            </div>
 
-                ))
-            ) : (
-                <p>Loading order details ....</p>
-            )}
+            <div className="status-change">
+                <h3>Cập nhật trạng thái</h3>
+                <select
+                    value={selectedStatus}
+                    onChange={(e) => handleStatusChange(e.target.value)}
+                >
+                    {OrderStatus.map(status => (
+                        <option key={status} value={status}>{status}</option>
+                    ))}
+                </select>
+                <button onClick={handleSubmitStatusChange}>
+                    Cập nhật trạng thái
+                </button>
+            </div>
         </div>
     );
-
 }
 
 export default AdminOrderDetailsPage;

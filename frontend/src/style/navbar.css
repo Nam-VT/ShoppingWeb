@@ -23,6 +23,16 @@ body {
     width: 500px;
     border: none;
     border-radius: 3px;
+    transition: all 0.3s ease;
+}
+
+.navbar-search input.searching {
+    background-color: #f5f5f5;
+}
+
+.navbar-search input::placeholder {
+    color: #666;
+    font-size: 0.9em;
 }
 
 .navbar-search button {
@@ -34,6 +44,11 @@ body {
     font-weight: bold;
     border-radius: 3px;
     cursor: pointer;
+}
+
+.navbar-search button:disabled {
+    background-color: #ccc;
+    cursor: not-allowed;
 }
 
 .navbar-link a,

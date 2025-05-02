@@ -70,25 +70,9 @@ public class Product {
     @OneToMany(mappedBy = "product", cascade = CascadeType.ALL)
     private List<OrderItem> orderItems;
 
-    // Add getter and setter for isActive
-    public boolean isActive() {
-        return isActive;
-    }
+    @Column(columnDefinition = "TEXT")
+    private String embeddingJson; // Vector embedding cho semantic search
 
-    public void setIsActive(boolean isActive) {
-        this.isActive = isActive;
-    }
-
-    public void setCategory(Category category) {
-    if (this.categories == null) {
-        this.categories = new ArrayList<>();
-    }
-    this.categories.add(category);
-}
-
-    public void setCategories(List<Category> categories) {
-        this.categories = categories;
-    }
 }
 
 

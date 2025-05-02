@@ -59,44 +59,48 @@ const CartPage = () => {
                     // Kiểm tra trạng thái đơn hàng từ API
                     const checkOrderStatus = async () => {
                         try {
-                            // Đợi một khoảng thời gian để backend có thể xử lý callback từ cổng thanh toán
-                            setTimeout(async () => {
-                                try {
-                                    const orderStatus = await ApiService.getOrderStatus(orderId);
-                                    
-                                    if (orderStatus.paymentStatus === 'PAID' || orderStatus.status === 'PAID') {
-                                        // Thanh toán thành công
-                                        setPaymentStatus('success');
-                                        setMessage('Thanh toán thành công! Cảm ơn bạn đã đặt hàng.');
-                                        
-                                        // Xóa các sản phẩm đã chọn khỏi giỏ hàng
-                                        const selectedCartItems = cart.filter(item => selectedItems[item.id]);
-                                        selectedCartItems.forEach(item => {
-                                            dispatch({ type: 'REMOVE_ITEM', payload: item });
-                                        });
-                                        
-                                        setShowCheckoutForm(false);
-                                    } else if (orderStatus.paymentStatus === 'FAILED' || orderStatus.status === 'FAILED') {
-                                        // Thanh toán thất bại
-                                        setPaymentStatus('failed');
-                                        setMessage('Thanh toán thất bại. Vui lòng thử lại hoặc chọn phương thức thanh toán khác.');
-                                    } else {
-                                        // Trạng thái không xác định
-                                        setPaymentStatus('pending');
-                                        setMessage('Không thể xác định trạng thái thanh toán. Vui lòng kiểm tra lại sau.');
-                                    }
-                                    
-                                    // Xóa ID đơn hàng đang chờ
-                                    localStorage.removeItem('pendingOrderId');
-                                    localStorage.removeItem('zalopay_trans_id');
-                                } catch (error) {
-                                    console.error("Error checking order status:", error);
-                                    setPaymentStatus('failed');
-                                    setMessage('Lỗi khi kiểm tra trạng thái thanh toán. Vui lòng liên hệ hỗ trợ.');
-                                }
-                            }, 3000); // Đợi 3 giây để backend xử lý webhook
+                            const orderStatus = await ApiService.getOrderStatus(orderId);
+                            
+                            // Kiểm tra xem orderStatus có đúng định dạng không
+                            if (!orderStatus || !orderStatus.success) {
+                                // Xử lý khi không lấy được trạng thái
+                                setPaymentStatus('pending');
+                                setMessage('Không thể kiểm tra trạng thái thanh toán: ' + 
+                                          (orderStatus?.error || 'Vui lòng kiểm tra lại sau'));
+                                return;
+                            }
+                            
+                            if (orderStatus.paymentStatus === 'PAID' || orderStatus.status === 'PAID' ||
+                                orderStatus.status === 'CONFIRMED') {
+                                // Thanh toán thành công
+                                setPaymentStatus('success');
+                                setMessage('Thanh toán thành công! Cảm ơn bạn đã đặt hàng.');
+                                
+                                // Xóa các sản phẩm đã chọn khỏi giỏ hàng
+                                const selectedCartItems = cart.filter(item => selectedItems[item.id]);
+                                selectedCartItems.forEach(item => {
+                                    dispatch({ type: 'REMOVE_ITEM', payload: item });
+                                });
+                                
+                                setShowCheckoutForm(false);
+                            } else if (orderStatus.paymentStatus === 'FAILED' || orderStatus.status === 'FAILED' ||
+                                      orderStatus.status === 'CANCELLED') {
+                                // Thanh toán thất bại
+                                setPaymentStatus('failed');
+                                setMessage('Thanh toán thất bại. Vui lòng thử lại hoặc chọn phương thức thanh toán khác.');
+                            } else {
+                                // Trạng thái không xác định
+                                setPaymentStatus('pending');
+                                setMessage('Không thể xác định trạng thái thanh toán. Vui lòng kiểm tra lại sau.');
+                            }
+                            
+                            // Xóa ID đơn hàng đang chờ
+                            localStorage.removeItem('pendingOrderId');
+                            localStorage.removeItem('zalopay_trans_id');
                         } catch (error) {
-                            console.error("Error in delayed status check:", error);
+                            console.error("Error checking order status:", error);
+                            setPaymentStatus('failed');
+                            setMessage('Lỗi khi kiểm tra trạng thái thanh toán. Vui lòng liên hệ hỗ trợ.');
                         }
                     };
                     
@@ -276,21 +280,19 @@ const CartPage = () => {
                     }
                 } else if (paymentMethod === 'ZALOPAY') {
                     try {
-                        const zaloPayResponse = await ApiService.createZaloPayUrl(orderId, selectedTotalPrice);
+                        const zaloPayResponse = await ApiService.createZaloPayOrder({
+                            orderId: orderId,
+                            amount: selectedTotalPrice
+                        });
                         console.log("ZaloPay response:", zaloPayResponse);
                         
-                        if (zaloPayResponse && zaloPayResponse.zalopay_response) {
-                            let zaloPayData;
-                            if (typeof zaloPayResponse.zalopay_response === 'string') {
-                                zaloPayData = JSON.parse(zaloPayResponse.zalopay_response);
-                            } else {
-                                zaloPayData = zaloPayResponse.zalopay_response;
-                            }
+                        if (zaloPayResponse) {
+                            let zaloPayData = zaloPayResponse;
                             
                             if (zaloPayData.return_code === 1) {
                                 // Lưu thông tin đơn hàng và app_trans_id
                                 localStorage.setItem('pendingOrderId', orderId);
-                                localStorage.setItem('zalopay_trans_id', zaloPayResponse.app_trans_id);
+                                localStorage.setItem('zalopay_trans_id', zaloPayData.app_trans_id);
                                 
                                 // Mở popup thay vì chuyển hướng
                                 const popupWindow = window.open(

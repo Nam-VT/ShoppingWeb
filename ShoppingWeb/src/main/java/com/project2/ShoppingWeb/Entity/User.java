@@ -27,7 +27,7 @@ import com.project2.ShoppingWeb.Enums.UserRole;
 public class User {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private long id;
+    private int id;
 
     @NotBlank(message = "Name is required")
     @Column(unique = true)

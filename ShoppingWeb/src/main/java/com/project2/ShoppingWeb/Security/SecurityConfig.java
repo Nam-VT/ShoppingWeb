@@ -35,7 +35,16 @@ public class SecurityConfig {
                 .requestMatchers("/auth/**").permitAll()
                 .requestMatchers("/uploads/**").permitAll()
                 .requestMatchers("/category/get-all-category", "/category/get-category-by-id").permitAll()
-                .requestMatchers("/product/get-all-product", "/product/get-product-by-id","/product/get-product-by-category", "/product/search", "/product/create", "/product/update", "/product/delete").permitAll()
+                .requestMatchers(
+                    "/product/get-all-product", 
+                    "/product/get-product-by-id",
+                    "/product/get-product-by-category", 
+                    "/product/search", 
+                    "/product/create", 
+                    "/product/update", 
+                    "/product/delete",
+                    "/product/smart-search"
+                ).permitAll()
                 .requestMatchers("/user/info").authenticated()
                 .requestMatchers("/admin/**").hasRole("ADMIN")
                 .requestMatchers("/bot/chat").permitAll() 
@@ -45,6 +54,8 @@ public class SecurityConfig {
                 .requestMatchers("/api/config/**").permitAll()
                 .requestMatchers("/address/**").permitAll()
                 .requestMatchers("/order/**").permitAll()
+                .requestMatchers("/api/chat/**").permitAll()
+                .requestMatchers("/api/products/smart-search").permitAll()
                 .anyRequest().authenticated()
             )
             .sessionManagement(manager -> manager

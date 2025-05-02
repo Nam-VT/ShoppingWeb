@@ -28,4 +28,5 @@ public class OrderDTO {
     private String paymentMethod;
     private OrderStatus status;
     private PaymentStatus paymentStatus;
+    private String transactionId;
 }

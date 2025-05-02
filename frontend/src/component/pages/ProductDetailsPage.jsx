@@ -73,65 +73,34 @@ const ProductDetailsPage = () => {
         }));
     };
     
-    const submitReview = async (e) => {
-        e.preventDefault();
-        
-        if (!newReview.comment.trim()) {
-            setReviewMessage("Please enter a comment");
-            return;
-        }
-        
-        setSubmitting(true);
+    const submitReview = async (reviewData) => {
         try {
-            if (!ApiService.isAuthenticated()) {
-                setReviewMessage("Please login to submit a review");
-                setSubmitting(false);
-                return;
-            }
-            
-            const reviewData = {
-                productId: productId,
-                rating: newReview.rating,
-                comment: newReview.comment
+            // Đảm bảo định dạng dữ liệu đúng
+            const payload = {
+                productId: productId, // Là Long/Number, không phải String
+                comment: reviewData.comment, // String
+                rating: reviewData.rating // Number/Integer (1-5)
             };
+
+            // Gọi API
+            const response = await ApiService.createReview(payload);
             
-            await ApiService.createReview(reviewData);
-            setReviewMessage("Review submitted successfully!");
-            setNewReview({ rating: 5, comment: "" });
+            // Xử lý thành công
+            console.log("Review submitted successfully:", response);
+            // Hiển thị thông báo thành công
+            // Cập nhật UI nếu cần
             
-            // Refresh reviews
-            fetchReviews();
+            return response;
         } catch (error) {
+            // Xử lý lỗi
             console.error("Error submitting review:", error);
             
-            let errorMessage = "Failed to submit review. Please try again later.";
+            // Hiển thị thông báo lỗi từ server
+            const errorMessage = error.response?.data?.message || 
+                                'Không thể gửi đánh giá. Vui lòng thử lại.';
+            // Hiển thị thông báo lỗi
             
-            // Trích xuất thông báo lỗi từ response của API
-            if (error.response) {
-                if (error.response.data && typeof error.response.data === 'object' && error.response.data.message) {
-                    // Nếu API trả về object với trường message (ApiError)
-                    errorMessage = error.response.data.message;
-                } else if (error.response.data && typeof error.response.data === 'string') {
-                    // Nếu API trả về string trực tiếp
-                    errorMessage = error.response.data;
-                }
-                
-                // Xử lý cụ thể cho trường hợp "already reviewed"
-                if (errorMessage.includes("already reviewed")) {
-                    errorMessage = "You have already reviewed this product.";
-                }
-            }
-            
-            setReviewMessage(errorMessage);
-        } finally {
-            setSubmitting(false);
-            
-            // Xóa thông báo sau 5 giây nếu là thông báo thành công
-            if (reviewMessage.includes("successfully")) {
-                setTimeout(() => {
-                    setReviewMessage("");
-                }, 5000);
-            }
+            throw error;
         }
     };
     
@@ -246,7 +215,30 @@ const ProductDetailsPage = () => {
                             You have already reviewed this product
                         </div>
                     ) : (
-                        <form onSubmit={submitReview}>
+                        <form onSubmit={(e) => {
+                            e.preventDefault();
+                            setSubmitting(true);
+                            setReviewMessage("");
+                            
+                            submitReview(newReview)
+                                .then(response => {
+                                    setReviewMessage("Đã gửi đánh giá thành công!");
+                                    setHasReviewed(true);
+                                    fetchReviews();
+                                    setNewReview({
+                                        rating: 5,
+                                        comment: ""
+                                    });
+                                })
+                                .catch(error => {
+                                    const errorMessage = error.response?.data?.message || 
+                                                      'Không thể gửi đánh giá. Vui lòng thử lại.';
+                                    setReviewMessage(errorMessage);
+                                })
+                                .finally(() => {
+                                    setSubmitting(false);
+                                });
+                        }}>
                             <div className="rating-select">
                                 <label>Rating:</label>
                                 <select 
