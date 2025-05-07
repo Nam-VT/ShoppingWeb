@@ -245,8 +245,7 @@ public class OrderServiceImpl implements OrderService {
     }
 
     @Override
-    public List<OrderDTO> deleteOrder(Long orderId) {
+    public void deleteOrder(Long orderId) {
         orderRepo.deleteById(orderId);
-        return getCurrentUserOrders();
     }
 }

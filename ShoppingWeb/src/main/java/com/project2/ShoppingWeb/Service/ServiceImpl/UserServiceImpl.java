@@ -55,6 +55,21 @@ public class UserServiceImpl implements UserService {
         }
     }
 
+    @PostConstruct
+    public void createUserAccount() {
+        if (!userRepo.findByEmail("user@example.com").isPresent()) {
+            User user = User.builder()
+                    .name("user")
+                    .email("user@example.com")
+                    .password(passwordEncoder.encode("user123"))
+                    .role(UserRole.USER)
+                    .phoneNumber("0123456789")
+                    .build();
+            
+            userRepo.save(user);
+            log.info("User account created successfully");
+        }
+    }
     
 
     @Override
@@ -125,7 +140,15 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public List<User> getAllUsers() {
-        return userRepo.findAll();
+        try {
+            log.info("Fetching all users");
+            List<User> users = userRepo.findAllWithAddress();
+            log.info("Found {} users", users.size());
+            return users;
+        } catch (Exception e) {
+            log.error("Error fetching users: {}", e.getMessage(), e);
+            throw new RuntimeException("Không thể lấy danh sách người dùng: " + e.getMessage());
+        }
     }
 
     @Override

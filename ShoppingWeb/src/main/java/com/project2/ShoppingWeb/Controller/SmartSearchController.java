@@ -8,10 +8,11 @@ import com.project2.ShoppingWeb.Service.SmartSearchService;
 import org.springframework.http.ResponseEntity;
 import reactor.core.publisher.Mono;
 
+import com.project2.ShoppingWeb.DTO.SmartSearchRequest;
 import com.project2.ShoppingWeb.DTO.SmartSearchResponse;
 import java.util.List;
 import lombok.extern.slf4j.Slf4j;
-import lombok.Data;
+
 @RestController
 @RequestMapping("/api/products")
 @Slf4j
@@ -23,9 +24,9 @@ public class SmartSearchController {
     }
 
     @PostMapping("/smart-search")
-    public Mono<ResponseEntity<SmartSearchResponse>> smartSearch(@RequestBody String searchQuery) {
-        log.info("Nhận yêu cầu tìm kiếm: {}", searchQuery);
-        return smartSearchService.searchProducts(searchQuery)
+    public Mono<ResponseEntity<SmartSearchResponse>> smartSearch(@RequestBody SmartSearchRequest request) {
+        log.info("Nhận yêu cầu tìm kiếm: {}", request.getSearchQuery());
+        return smartSearchService.searchProducts(request.getSearchQuery())
                 .map(ResponseEntity::ok)
                 .doOnSuccess(response -> 
                     log.info("Hoàn thành tìm kiếm, tìm thấy {} kết quả", 
@@ -36,7 +37,7 @@ public class SmartSearchController {
                         .internalServerError()
                         .body(new SmartSearchResponse(
                             List.of(),
-                            "Có lỗi xảy ra: " + e.getMessage(),
+                            "Đã xảy ra lỗi trong hệ thống. Vui lòng thử lại sau!",
                             null
                         )));
                 });

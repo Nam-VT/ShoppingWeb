@@ -83,7 +83,7 @@ const AdminOrderDetailsPage = () => {
                         </tr>
                     </thead>
                     <tbody>
-                        {order.orderItems.map(item => (
+                        {(order.orderItems || []).map(item => (
                             <tr key={item.id}>
                                 <td>{item.product.name}</td>
                                 <td>{item.quantity}</td>

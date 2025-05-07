@@ -93,7 +93,7 @@ function OrderHistoryPage() {
                             </div>
                             
                             <div className="order-items">
-                                {order.orderItems.map(item => (
+                                {(order.orderItems || []).map(item => (
                                     <div key={item.id} className="order-item">
                                         <div className="item-image">
                                             <img 

@@ -120,7 +120,7 @@ function OrderDetailsPage() {
             <div className="order-items-section">
                 <h3>Sản phẩm đặt mua</h3>
                 <div className="order-items-list">
-                    {order.orderItems.map(item => (
+                    {(order.orderItems || []).map(item => (
                         <div key={item.id} className="order-item-card">
                             <div className="item-image">
                                 <img 

@@ -89,7 +89,7 @@ const ProfilePage = () => {
             )}
 
             {/* Chỉ hiển thị phần orders nếu có */}
-            {userInfo.orderItemlist && userInfo.orderItemlist.length > 0 && (
+            {orderItemList.length > 0 && (
                 <div className="order-section">
                     <h3>Order History</h3>
                     <ul className="order-list">

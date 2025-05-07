@@ -17,5 +17,6 @@ public class SearchCriteria {
     private Boolean availability;   // còn hàng hay không
     private String sortBy;         // sắp xếp theo tiêu chí nào
     private List<String> keywords; // các từ khóa khác
+    private List<String> attributes; // Thêm trường mới để lưu các thuộc tính như màu sắc, kích thước,...
     private Boolean valid;
 }

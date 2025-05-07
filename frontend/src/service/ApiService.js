@@ -689,15 +689,14 @@ export default class ApiService {
         try {
             const response = await axios.post(
                 `${this.BASE_URL}/api/products/smart-search`,
-                searchQuery,
+                { searchQuery: searchQuery },
                 {
                     headers: {
-                        'Content-Type': 'text/plain'
+                        'Content-Type': 'application/json'
                     }
                 }
             );
             
-            // Kiểm tra và xử lý response
             if (response.data && Array.isArray(response.data.products)) {
                 return {
                     products: response.data.products,
@@ -706,8 +705,7 @@ export default class ApiService {
                 };
             }
             
-            // Nếu response không đúng format
-            console.warn('Unexpected response format:', response.data);
+            console.warn('Định dạng response không đúng:', response.data);
             return {
                 products: [],
                 explanation: "Định dạng dữ liệu không hợp lệ",
@@ -715,13 +713,19 @@ export default class ApiService {
             };
             
         } catch (error) {
-            console.error('Smart search error:', error);
-            // Trả về object rỗng với message lỗi cụ thể
+            console.error('Lỗi tìm kiếm thông minh:', error);
             return {
                 products: [],
-                explanation: error.response?.data?.message || "Có lỗi xảy ra khi tìm kiếm",
+                explanation: error.response?.data?.message || "Đã xảy ra lỗi trong hệ thống. Vui lòng thử lại sau!",
                 criteria: null
             };
         }
+    }
+
+    static async deleteOrder(orderId) {
+        const response = await axios.delete(`${this.BASE_URL}/order/${orderId}`, {
+            headers: this.getHeader()
+        });
+        return response.data;
     }
 }

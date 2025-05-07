@@ -165,7 +165,9 @@ public class OrderController {
     }
 
     @DeleteMapping("/{orderId}")
+    @PreAuthorize("hasAuthority('ADMIN')")
     public ResponseEntity<?> deleteOrder(@PathVariable Long orderId) {
-        return ResponseEntity.ok(orderService.deleteOrder(orderId));
+        orderService.deleteOrder(orderId);
+        return ResponseEntity.ok("Order deleted successfully");
     }   
 } 
